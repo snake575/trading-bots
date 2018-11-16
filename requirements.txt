@@ -9,7 +9,7 @@ jinja2==2.10
 markupsafe==1.0
 pygogo==0.12.0
 pyyaml==3.13
-requests==2.19.1
+requests==2.20.1
 simple-settings==0.13.0
 stringcase==1.2.0
 trading-api-wrappers==0.15.1
