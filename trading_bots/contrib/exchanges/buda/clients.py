@@ -82,7 +82,7 @@ class BudaAuth(BudaBase):
     @cached_property
     def client(self) -> Buda.Auth:
         self.check_credentials()
-        return Buda.Auth(**self.client_params)
+        return Buda.Auth(**self.credentials, **self.client_params)
 
 
 class BudaMarketBase(MarketClient, ABC):

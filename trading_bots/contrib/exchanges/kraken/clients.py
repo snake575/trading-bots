@@ -56,7 +56,7 @@ class KrakenAuth(KrakenBase):
     @cached_property
     def client(self) -> Kraken.Auth:
         self.check_credentials()
-        return Kraken.Auth(**self.client_params)
+        return Kraken.Auth(**self.credentials, **self.client_params)
 
 
 class KrakenMarketBase(MarketClient, ABC):

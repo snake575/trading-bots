@@ -38,12 +38,12 @@ class ClientWrapper(abc.ABC):
         credentials = getattr(settings, 'credentials', {})
         self.credentials: Dict = credentials.get(self.name, {})
         self.timeout: int = getattr(settings, 'timeout')
-        self.client_params: Dict = self._build_client_params(client_params or {})
+        self.client_params: Dict = self._build_client_params(**client_params or {})
         if name is not None:
             self.name = name
 
-    def _build_client_params(self, params: Dict) -> Dict:
-        return {'timeout': self.timeout, 'user_agent': USER_AGENT, **self.credentials, **params}
+    def _build_client_params(self, **params) -> Dict:
+        return {'timeout': self.timeout, 'user_agent': USER_AGENT, **params}
 
 
 class BaseClient(ClientWrapper, abc.ABC):

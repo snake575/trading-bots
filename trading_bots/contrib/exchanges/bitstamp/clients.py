@@ -43,7 +43,7 @@ class BitstampAuth(BitstampBase):
     @cached_property
     def client(self) -> Bitstamp.Auth:
         self.check_credentials()
-        return Bitstamp.Auth(**self.client_params)
+        return Bitstamp.Auth(**self.credentials, **self.client_params)
 
 
 class BitstampMarketBase(MarketClient, ABC):

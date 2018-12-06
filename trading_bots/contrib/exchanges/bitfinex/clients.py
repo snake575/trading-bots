@@ -41,7 +41,7 @@ class BitfinexPublic(BitfinexBase):
 
     @cached_property
     def client_v2(self) -> BitfinexV2.Public:
-        return BitfinexV2.Public(**self.client_params)
+        return BitfinexV2.Public(**self.credentials, **self.client_params)
 
     @cached_property
     def client(self) -> Bitfinex.Public:
