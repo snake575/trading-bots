@@ -64,10 +64,13 @@ def paginated_since(data_attr: str, max_limit: int):
 class BudaBase(BaseClient, ABC):
     name = 'Buda'
 
-    @cached_property
-    def markets(self) -> Set[Market]:
-        markets = self._fetch('Markets')(self.client.markets)()
+    def _markets(self) -> Set[Market]:
+        markets = self.client.markets()
         return {Market(*market.id.split('-')) for market in markets}
+
+    def _currencies(self) -> Set[str]:
+        response = self.client.get('currencies')
+        return {ccy['id'] for ccy in response['currencies'] if ccy['managed']}
 
 
 class BudaPublic(BudaBase):

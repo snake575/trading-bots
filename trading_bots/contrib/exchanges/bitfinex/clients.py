@@ -27,9 +27,8 @@ DEFAULT_WALLET_TYPE = 'exchange'
 class BitfinexBase(BaseClient, ABC):
     name: str = 'Bitfinex'
 
-    @cached_property
-    def markets(self) -> Set[Market]:
-        symbols = self._fetch('Markets')(self.client.symbols)()
+    def _markets(self) -> Set[Market]:
+        symbols = self.client.symbols()
         return {Market.from_code(symbol.upper()) for symbol in symbols}
 
 

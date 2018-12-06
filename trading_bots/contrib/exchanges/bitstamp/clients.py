@@ -25,9 +25,8 @@ side_mapping = {'0': Side.BUY, '1': Side.SELL}
 class BitstampBase(BaseClient, ABC):
     name = 'Bitstamp'
 
-    @cached_property
-    def markets(self) -> Set[Market]:
-        pairs = self._fetch('Markets')(self.client.trading_pairs_info)()
+    def _markets(self) -> Set[Market]:
+        pairs = self.client.trading_pairs_info()
         return {Market(*pair['name'].split('/')) for pair in pairs}
 
 

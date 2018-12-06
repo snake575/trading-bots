@@ -69,10 +69,24 @@ class BaseClient(ClientWrapper, abc.ABC):
     def client(self):
         pass
 
-    @cached_property
     @abc.abstractmethod
-    def markets(self) -> Set[Market]:
+    def _markets(self) -> Set[Market]:
         pass
+
+    @cached_property
+    def markets(self) -> Set[Market]:
+        """Fetch supported markets."""
+        return self._fetch('Markets')(self._markets)()
+
+    def _currencies(self) -> Set[str]:
+        markets = self._markets()
+        return {*{market.base for market in markets},
+                *{market.quote for market in markets}}
+
+    @cached_property
+    def currencies(self) -> Set[str]:
+        """Fetch supported currencies."""
+        return self._fetch('Currencies')(self._currencies)()
 
     def exception(self, exc_type: Type[Exception]=None, msg: str=None, exc: Exception=None) -> Exception:
         if exc_type is None:
@@ -124,9 +138,10 @@ class BaseClient(ClientWrapper, abc.ABC):
                 except Exception as e:
                     raise self.exception(exc, f'Failed fetching {msg}!', e) from e
 
-                try:  # Log result
+                # Log result
+                if isinstance(result, (list, set, tuple)):
                     result_msg = len(result)
-                except TypeError:
+                else:
                     result_msg = str(result)
                 self.log.debug(f'{msg}: {result_msg}')
 

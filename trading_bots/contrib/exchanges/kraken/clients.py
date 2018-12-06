@@ -22,10 +22,9 @@ __all__ = [
 class KrakenBase(BaseClient, ABC):
     name: str = 'Kraken'
 
-    @cached_property
-    def markets(self) -> Set[Market]:
+    def _markets(self) -> Set[Market]:
         # NOTE: Doesn't support Kraken dark pool markets
-        pairs = self._fetch('Markets')(self.client.asset_pairs)()['result']
+        pairs = self.client.asset_pairs()['result']
 
         def generate_markets():
             for key, pair in pairs.items():
@@ -42,6 +41,15 @@ class KrakenBase(BaseClient, ABC):
                     yield Market(base, quote)
 
         return set(generate_markets())
+
+    def _currencies(self) -> Set[str]:
+        assets = self.client.assets()['result']
+
+        def generate_assets():
+            for key, asset in assets.items():
+                yield self._parse_common_currency(asset['altname'])
+
+        return set(generate_assets())
 
 
 class KrakenPublic(KrakenBase):
