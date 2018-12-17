@@ -167,7 +167,7 @@ class KrakenWallet(WalletClient, KrakenAuth):
 
     def _withdraw(self, amount: Decimal, address: str, subtract_fee: bool=False, **params) -> Withdrawal:
         asset = self.currency.replace('BTC', 'XBT').replace('ETH', 'XETH')
-        withdraw = self.client.withdraw(asset, amount, address, **params)
+        withdraw = self.client.withdraw(asset, amount, address, **params)['result']
         return self._parse_transaction(withdraw, TxType.WITHDRAWAL)
 
     def _parse_transaction(self, tx: Dict, tx_type: TxType) -> Transaction:
