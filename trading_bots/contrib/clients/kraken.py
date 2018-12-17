@@ -103,7 +103,7 @@ class KrakenWallet(WalletClient, KrakenAuth):
 
     def _withdraw(self, currency: str, amount: float, address: str, subtract_fee: bool=False):
         asset = currency.replace('BTC', 'XBT').replace('ETH', 'XETH')
-        return self.client.withdraw(asset, amount, address)
+        return self.client.withdraw(asset, amount, address)['result']
 
 
 class KrakenTrading(TradingClient, KrakenAuth, KrakenMarket):
@@ -114,6 +114,10 @@ class KrakenTrading(TradingClient, KrakenAuth, KrakenMarket):
         'BTC': 0.002,
         'ETH': 0.02,
         'LTC': 0.002,
+    }
+    market_id_positions_mapping = {
+        'XBTUSD': 'XXBTZUSD',
+        'ETHUSD': 'XETHZUSD',
     }
 
     def _open_orders(self):
@@ -136,7 +140,9 @@ class KrakenTrading(TradingClient, KrakenAuth, KrakenMarket):
 
     def _open_positions(self):
         positions = self.client.open_positions()['result'].values()
-        return [p for p in positions if p['pair'] == self.market_id and p['posstatus'] == 'open']
+        return [p for p in positions
+                if p['pair'] == self.market_id_positions_mapping[self.market_id]
+                and p['posstatus'] == 'open']
 
     def _open_position(self, side: Side, p_type: OrderType, amount: float, price: float=None, leverage: float=None):
         return self.client.add_order(self.market_id, side.value, p_type.value, amount, price, leverage=leverage)
