@@ -72,6 +72,10 @@ class KrakenMarketBase(MarketClient, ABC):
     def _market_id(self) -> str:
         return str(self.market).replace('BTC', 'XBT')
 
+    def _trading_fees(self) -> TradingFees:
+        # Kraken returns tuples (volume, percent fee) on AssetPairs endpoint
+        raise NotSupported
+
     def _ticker(self) -> Ticker:
         result = self.client.ticker(symbol=self.market_id)['result']
         # Get result first key
@@ -120,11 +124,10 @@ class KrakenMarket(KrakenMarketBase, KrakenPublic):
 
 
 class KrakenWallet(WalletClient, KrakenAuth):
-    withdrawal_fees = {
-        'BCH': 0.0005,
-        'BTC': 0.0005,
-        'ETH': 0.01,
-        'LTC': 0.01,
+    withdrawal_fee_mapping = {
+        'BTC': Fee(base=Money('0.0005', 'BTC')),
+        'ETH': Fee(base=Money('0.01', 'ETH')),
+        'LTC': Fee(base=Money('0.01', 'LTC')),
     }
 
     def _balance(self) -> Balance:

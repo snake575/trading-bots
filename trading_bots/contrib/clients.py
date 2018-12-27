@@ -195,6 +195,15 @@ class MarketClient(BaseClient, abc.ABC):
         return parse_money(value, self.market.quote)
 
     @abc.abstractmethod
+    def _trading_fees(self) -> TradingFees:
+        pass
+
+    @cached_property
+    def trading_fees(self) -> TradingFees:
+        """Fetch trading fees."""
+        return self._fetch('trading fees', self.market.code)(self._trading_fees)()
+
+    @abc.abstractmethod
     def _ticker(self) -> Ticker:
         pass
 
@@ -242,7 +251,7 @@ class MarketClient(BaseClient, abc.ABC):
 
 
 class WalletClient(BaseClient, abc.ABC):
-    withdrawal_fees = {}
+    withdrawal_fee_mapping: Dict[str, Fee] = {}
 
     def __init__(self, currency: str, client_params: Dict=None, dry_run: bool=False,
                  logger: Logger=None, store: Store=None, name: str=None, **kwargs):
@@ -318,13 +327,17 @@ class WalletClient(BaseClient, abc.ABC):
         return self._transactions_since(self._withdrawals_since, 'withdrawals', since)
 
     # Transfers: Request withdrawal
-    @cached_property
-    def withdrawal_fee(self) -> Money:
-        """Withdrawal fee on request."""
+    def _withdrawal_fee(self) -> Fee:
+        """Withdrawal fee."""
         try:
-            return self.withdrawal_fees[self.currency]
+            return self.withdrawal_fee_mapping[self.currency]
         except KeyError:
-            return Money(0, self.currency)
+            return Fee()
+
+    @cached_property
+    def withdrawal_fee(self) -> Fee:
+        """Withdrawal fee."""
+        return self._fetch('withdrawal fee', self.currency)(self._withdrawal_fee)()
 
     @abc.abstractmethod
     def _withdraw(self, amount: Decimal, address: str, subtract_fee: bool=False, **params) -> Withdrawal:
@@ -493,13 +506,17 @@ class TradingClient(MarketClient, abc.ABC):
         return self.cancel_orders(order_ids)
 
     @cached_property
-    def min_order_amount(self) -> Money:
-        """Minimum amount to place an order."""
+    def _min_order_amount(self) -> Money:
         try:
             amount = self.min_order_amount_mapping[self.market.base]
         except KeyError:
             amount = 0
         return Money(amount, self.market.base)
+
+    @cached_property
+    def min_order_amount(self) -> Money:
+        """Minimum amount to place an order."""
+        return self._fetch('minimum order amount', self.market.code)(self._min_order_amount)()
 
     @abc.abstractmethod
     def _place_order(self, side: Side, order_type: OrderType, amount: Decimal, price: Decimal=None) -> Order:

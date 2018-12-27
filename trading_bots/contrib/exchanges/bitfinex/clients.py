@@ -60,6 +60,12 @@ class BitfinexMarketBase(MarketClient, ABC):
     def market_id_v2(self) -> str:
         return 't' + self.market_id
 
+    def _trading_fees(self) -> TradingFees:
+        # TODO: Implement Bitfinex trading_fees
+        #  Available at account_infos private endpoint
+        #  https://docs.bitfinex.com/v1/reference#rest-auth-account-info
+        raise NotImplementedError
+
     def _ticker(self) -> Ticker:
         ticker = self.client.ticker(symbol=self.market_id)
         return self._parse_ticker(ticker)
@@ -141,11 +147,13 @@ class BitfinexMarket(BitfinexMarketBase, BitfinexPublic):
 
 
 class BitfinexWallet(WalletClient, BitfinexAuth):
-    withdrawal_fees = {
-        'BCH': 0.0005,
-        'BTC': 0.0005,
-        'ETH': 0.01,
-        'LTC': 0.01,
+    # TODO: Bitfinex withdrawal_fee is available on the API
+    #  https://docs.bitfinex.com/v1/reference#rest-auth-fees
+    withdrawal_fee_mapping = {
+        'BCH': Fee(base=Money('0.0005', 'BCH')),
+        'BTC': Fee(base=Money('0.0005', 'BTC')),
+        'ETH': Fee(base=Money('0.01', 'ETH')),
+        'LTC': Fee(base=Money('0.01', 'LTC')),
     }
     method_mapping = {
         'BCH': 'bcash',
@@ -263,6 +271,8 @@ class BitfinexWallet(WalletClient, BitfinexAuth):
 class BitfinexTrading(TradingClient, BitfinexMarketBase, BitfinexAuth):
     _wallet_cls = BitfinexWallet
     has_batch_cancel = False
+    # TODO: Bitfinex min_order_amount is available on the API
+    #  https://docs.bitfinex.com/v1/reference#rest-public-symbol-details
     min_order_amount_mapping = {
         'BCH': Decimal('0.02'),
         'BTC': Decimal('0.002'),

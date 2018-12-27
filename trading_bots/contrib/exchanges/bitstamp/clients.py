@@ -50,6 +50,11 @@ class BitstampMarketBase(MarketClient, ABC):
     def _market_id(self) -> str:
         return self.market.code.lower()
 
+    def _trading_fees(self) -> TradingFees:
+        # TODO: Implement Bitstamp trading_fees
+        # Appears to be available on ACCOUNT BALANCE private endpoint
+        raise NotImplementedError
+
     def _ticker(self) -> Ticker:
         ticker = self.client.ticker(self.market_id)
         maya_dt = maya.MayaDT(int(ticker['timestamp']))

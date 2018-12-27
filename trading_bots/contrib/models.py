@@ -19,6 +19,8 @@ __all__ = [
     'OrderStatus',
     'TxType',
     'TxStatus',
+    'Fee',
+    'TradingFees',
     'Ticker',
     'Balance',
     'Trade',
@@ -169,6 +171,20 @@ class Timestamped:
         if self.datetime is None:
             self.datetime = maya_dt.datetime()
         self.iso8601 = maya_dt.iso8601()
+
+
+@dataclass
+class Fee:
+    base: Optional[Money] = None
+    percent: Optional[Decimal] = None
+    info: Any = field(default=None, repr=False)
+
+
+@dataclass
+class TradingFees:
+    maker: Fee
+    taker: Fee
+    info: Any = field(default=None, repr=False)
 
 
 @dataclass

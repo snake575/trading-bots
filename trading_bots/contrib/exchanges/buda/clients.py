@@ -93,6 +93,9 @@ class BudaMarketBase(MarketClient, ABC):
     def _market_id(self) -> str:
         return f'{self.market.base}-{self.market.quote}'.lower()
 
+    def _trading_fees(self) -> TradingFees:
+        raise NotSupported
+
     def _ticker(self) -> Ticker:
         ticker = self.client.ticker(self.market_id)
         return self._parse_ticker(ticker)
@@ -170,6 +173,16 @@ class BudaWallet(WalletClient, BudaAuth):
         TxStatus.FAILED: ('rejected',),
         TxStatus.CANCELED: ('anulled', 'retained'),
     }
+
+    def _withdrawal_fee(self) -> Fee:
+        transaction_type = 'withdrawal'
+        data = self.client.get(f'currencies/{self.currency_id}/fees/{transaction_type}')
+        fee = data['fee']
+        return Fee(
+            base=Money(*fee['base']) if fee['base'] else None,
+            percent=Decimal(fee['percent']) if fee['percent'] else None,
+            info=fee,
+        )
 
     def _balance(self) -> Balance:
         balance = self.client.balance(self.currency)
