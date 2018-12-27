@@ -26,6 +26,7 @@ __all__ = [
     'OrderBookEntry',
     'OrderBook',
     'OrderBookSide',
+    'Quotation',
     'Transaction',
     'Withdrawal',
     'Deposit',
@@ -109,11 +110,18 @@ class Side(Enum):
         return self.name
 
     @property
-    def type(self):
+    def type(self) -> str:
         if self == Side.BUY:
             return 'bid'
         else:
             return 'ask'
+
+    @property
+    def reverse(self) -> 'Side':
+        if self == Side.BUY:
+            return Side.SELL
+        else:
+            return Side.BUY
 
 
 class OrderType(Enum):
@@ -270,6 +278,33 @@ OrderBookSide = List[OrderBookEntry]
 
 
 @dataclass
+class Quotation:
+    side: Side
+    market: Market
+    orders: List[OrderBookEntry] = field(repr=False)
+    amount: Money = field(repr=False)
+    fee: Optional[Decimal] = field(default=None, repr=False)
+    amount_other: Money = field(init=False, repr=False)
+    base_amount: Money = field(init=False)
+    quote_amount: Money = field(init=False)
+
+    def __post_init__(self):
+        fee_scalar = Decimal(1) - (self.fee or Decimal(0))
+        if self.amount.currency == self.market.base:
+            self.amount_other = sum(Money(o.amount.amount * o.price.amount, self.market.quote)
+                                    for o in self.orders) * fee_scalar
+            self.base_amount, self.quote_amount = self.amount, self.amount_other
+        else:
+            self.amount_other = sum(Money(o.amount.amount / o.price.amount, self.market.base)
+                                    for o in self.orders) * fee_scalar
+            self.base_amount, self.quote_amount = self.amount_other, self.amount
+        self.average_price = self.quote_amount / self.base_amount.amount
+
+    def __str__(self):
+        return f'{self.side} {self.base_amount} for {self.quote_amount} @{self.average_price}'
+
+
+@dataclass
 class OrderBook(Timestamped):
     market: Market
     bids: OrderBookSide = field(repr=False)
@@ -316,53 +351,46 @@ class OrderBook(Timestamped):
         return volume_total, volume_bid, volume_ask
 
     # Quote ------------------------------------------------------------------
+    def quote(self, side: Side, amount: Money=None, fee: Decimal=None) -> Quotation:
+        """Get a quotation for the order book given a side, amount and fee (amount can be base or quote)."""
+        orders = self._quote_book_orders(side, amount)
+        return Quotation(side, self.market, orders, amount, fee)
+
+    def quote_buy(self, amount: Money=None, fee: Decimal=None) -> Quotation:
+        """Get a buy quotation for the order book given an amount and fee (amount can be base or quote)."""
+        return self.quote(Side.BUY, amount, fee)
+
+    def quote_sell(self, amount: Money=None, fee: Decimal=None) -> Quotation:
+        """Get a sell quotation for the order book given an amount and fee (amount can be base or quote)."""
+        return self.quote(Side.SELL, amount, fee)
+
     def _quote_book_orders(self, side: Side, amount: Money=None) -> List[OrderBookEntry]:
         # Flip sides, for a buy quotation we need to quote the sell book (asks)
-        side = Side.SELL if side == side.BUY else Side.BUY
-        order_book_side = self.get_book_side(side)
-        if amount is None:
-            amount = Money(0, self.market.base)
-        remaining = amount
+        side = side.reverse
         orders: List[OrderBookEntry] = []
+        order_book_side = self.get_book_side(side)
+
         if not order_book_side:
             raise OrderBookEmpty(f'{side.value.title()} order book is empty!')
+        if amount is None:
+            amount = Money(0, self.market.base)
+        if amount.currency not in self.market.code:
+            raise ValueError(f"The amount currency {amount.currency} must be in {self.market}")
+
+        def get_order_amount(order_: OrderBookEntry) -> Money:
+            if amount.currency == self.market.quote:
+                return order_.price * order_.amount.amount
+            return order_.amount
+
         for order in order_book_side:
-            order_amount = min(order.amount, remaining)
+            order_amount = min(get_order_amount(order), amount)
             orders.append(OrderBookEntry(order.price, order_amount))
-            remaining -= order_amount
-            if not remaining:
+            amount -= order_amount
+            if not amount:
                 break
-        if remaining:
+        if amount:
             raise QuotationError(f'Total amount on {side} order book is not enough to cover quote')
         return orders
-
-    def quote_amount(self, side: Side, amount: Money=None) -> Money:
-        """Get the quote amount given a base amount for a side of the order book."""
-        orders = self._quote_book_orders(side, amount)
-        return sum(o.price * o.amount.amount for o in orders)
-
-    def quote_buy_amount(self, amount: Money=None) -> Money:
-        """Get the quote amount given a spent base from the order book."""
-        return self.quote_amount(Side.BUY, amount)
-
-    def quote_sell_amount(self, amount: Money=None) -> Money:
-        """Get the quote amount given an earned base from the order book."""
-        return self.quote_amount(Side.SELL, amount)
-
-    def quote_average_price(self, side: Side, amount: Money=None) -> Money:
-        """Quote an average price for an amount for a side of the order book."""
-        if not amount:
-            return self.quote_price(side, amount)
-        quote = self.quote_amount(side, amount)
-        return quote / (amount.amount if amount else 1)
-
-    def quote_average_buy_price(self, amount: Money=None) -> Money:
-        """Quote an average buy price for an amount from the order book."""
-        return self.quote_average_price(Side.BUY, amount)
-
-    def quote_average_sell_price(self, amount: Money=None) -> Money:
-        """Quote an average sell price for an amount from the order book."""
-        return self.quote_average_price(Side.SELL, amount)
 
     # Spread -----------------------------------------------------------------
     def quote_price(self, side: Side, amount: Money=None) -> Money:
