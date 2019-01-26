@@ -249,11 +249,11 @@ class BudaWallet(WalletClient, BudaAuth):
             id=tx.id,
             type=tx_type,
             currency=tx.currency,
-            amount=Money(*tx.json['amount']),
+            amount=Money(*tx.json['amount']) if tx.json['amount'] else None,
             status=self._parse_tx_status(tx.state),
             address=data.address if data else None,
             tx_hash=data.tx_hash if data else None,
-            fee=Money(*tx.json['fee']),
+            fee=Money(*tx.json['fee']) if tx.json['fee'] else None,
             info=tx,
             timestamp=created_at.timestamp() if created_at else None,
             datetime=created_at if created_at else None,
@@ -317,7 +317,9 @@ class BudaTrading(TradingClient, BudaMarketBase, BudaAuth):
 
     def _place_order(self, side: Side, o_type: OrderType, amount: Decimal, price: Decimal=None) -> Order:
         side = self.side_mapping[side].value
-        order = self.client.new_order(self.market_id, side, o_type.value, float(amount), float(price))
+        amount = float(amount)
+        price = float(price) if price else None
+        order = self.client.new_order(self.market_id, side, o_type.value, amount, price)
         return self._parse_order(order)
 
     def _parse_order_status(self, state: str) -> Optional[OrderStatus]:
