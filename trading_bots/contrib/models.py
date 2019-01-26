@@ -193,6 +193,7 @@ class Ticker(Timestamped):
     bid: Money
     ask: Money
     last: Money
+    mid: Optional[Money] = field(repr=False)
     open: Optional[Money] = field(repr=False)
     high: Optional[Money] = field(repr=False)
     low: Optional[Money] = field(repr=False)

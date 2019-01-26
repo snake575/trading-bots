@@ -60,10 +60,13 @@ class BitstampMarketBase(MarketClient, ABC):
         maya_dt = maya.MayaDT(int(ticker['timestamp']))
         currency = self.market.quote
         last = Money(ticker['last'], currency)
+        bid = Money(ticker['bid'], currency)
+        ask = Money(ticker['ask'], currency)
         return Ticker(
             market=self.market,
-            bid=Money(ticker['bid'], currency),
-            ask=Money(ticker['ask'], currency),
+            bid=bid,
+            ask=ask,
+            mid=(bid + ask) / 2,
             last=last,
             open=Money(ticker['open'], currency),
             high=Money(ticker['high'], currency),

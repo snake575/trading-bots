@@ -78,6 +78,7 @@ class BitfinexMarketBase(MarketClient, ABC):
             market=self.market,
             bid=self.safe_money(ticker, 'bid', currency),
             ask=self.safe_money(ticker, 'ask', currency),
+            mid=self.safe_money(ticker, 'mid', currency),
             last=last,
             open=None,
             high=self.safe_money(ticker, 'high', currency),

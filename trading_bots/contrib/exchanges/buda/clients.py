@@ -103,13 +103,16 @@ class BudaMarketBase(MarketClient, ABC):
     def _parse_ticker(self, ticker: Buda.models.Ticker) -> Ticker:
         last = Money(*ticker.json['last_price'])
         percentage = Decimal(ticker.json['price_variation_24h'])
+        bid=Money(*ticker.json['max_bid'])
+        ask=Money(*ticker.json['min_ask'])
         open_ = last / (percentage + 1)
         change = last - open_
         average = (last + open_) / 2
         return Ticker(
             market=self.market,
-            bid=Money(*ticker.json['max_bid']),
-            ask=Money(*ticker.json['min_ask']),
+            bid=bid,
+            ask=ask,
+            mid=(bid + ask) / 2,
             last=last,
             open=None,
             high=None,

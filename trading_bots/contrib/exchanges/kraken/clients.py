@@ -84,14 +84,17 @@ class KrakenMarketBase(MarketClient, ABC):
 
     def _parse_ticker(self, ticker: Dict) -> Ticker:
         currency = self.market.quote
+        bid = Money(ticker['b'][0], currency)
+        ask = Money(ticker['a'][0], currency)
         last = Money(ticker['c'][0], currency)
         _open = ticker.get('o')
         if _open:
             _open = Money(_open, currency)
         return Ticker(
             market=self.market,
-            bid=Money(ticker['b'][0], currency),
-            ask=Money(ticker['a'][0], currency),
+            bid=bid,
+            ask=ask,
+            mid=(bid + ask) / 2,
             last=last,
             open=_open,
             high=Money(ticker['h'][1], currency),
