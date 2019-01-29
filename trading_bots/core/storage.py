@@ -1,3 +1,4 @@
+import abc
 import json as j
 import pickle as p
 from logging import Logger
@@ -11,7 +12,7 @@ except ImportError:
     pass
 
 
-def get_store(logger: Logger=None):
+def get_store(logger: Logger=None) -> 'Store':
     """Get and configure the storage backend"""
     from trading_bots.conf import settings
     store_settings = settings.storage
@@ -25,7 +26,7 @@ def get_store(logger: Logger=None):
     return store_cls(logger=logger, **kwargs)
 
 
-class BaseStore:
+class BaseStore(abc.ABC):
     name = ''
 
     def __init__(self, logger: Logger=None):
@@ -38,7 +39,7 @@ class BaseStore:
         return {}
 
 
-class Store(BaseStore):
+class Store(BaseStore, abc.ABC):
     serializers = {
         'json': j,
         'pickle': p,
@@ -64,14 +65,16 @@ class Store(BaseStore):
             self.log.exception(f'Failed to get {path_str} from {self.name}')
             raise
 
+    @abc.abstractmethod
     def _get(self, name: str, **kwargs):
-        raise NotImplementedError
+        pass
 
     def get(self, name: str, cast=None, serializer=None, **kwargs):
         return self.__get(self._get, name, cast=cast, serializer=serializer, **kwargs)
 
+    @abc.abstractmethod
     def _hget(self, name: str, key: str, **kwargs):
-        raise NotImplementedError
+        pass
 
     def hget(self, name: str, key: str, cast=None, serializer=None, **kwargs):
         return self.__get(self._hget, name, key, cast=cast, serializer=serializer, **kwargs)
@@ -90,14 +93,16 @@ class Store(BaseStore):
             self.log.exception(f'Failed to set {path_str} on {self.name}')
             raise
 
+    @abc.abstractmethod
     def _set(self, name: str, value, **kwargs):
-        raise NotImplementedError
+        pass
 
     def set(self, name: str, value, serializer=None, **kwargs):
         return self.__set(self._set, name, value=value, serializer=serializer, **kwargs)
 
+    @abc.abstractmethod
     def _hset(self, name: str, key: str, value, **kwargs):
-        raise NotImplementedError
+        pass
 
     def hset(self, name: str, key: str, value, serializer=None, **kwargs):
         return self.__set(self._hset, name, key, value=value, serializer=serializer, **kwargs)
@@ -115,14 +120,16 @@ class Store(BaseStore):
             self.log.exception(f'Failed to delete {path_str} from {self.name}')
             raise
 
+    @abc.abstractmethod
     def _delete(self, name: str, **kwargs):
-        raise NotImplementedError
+        pass
 
     def delete(self, name: str, **kwargs):
         return self.__delete(self._delete, name, **kwargs)
 
+    @abc.abstractmethod
     def _hdel(self, name: str, key: str, **kwargs):
-        raise NotImplementedError
+        pass
 
     def hdel(self, name: str, key: str, **kwargs):
         return self.__delete(self._hdel, name, key, **kwargs)

@@ -1,6 +1,5 @@
 import codecs
 import importlib
-import re
 
 import yaml
 

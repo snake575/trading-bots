@@ -1,5 +1,11 @@
 import math
 from datetime import datetime
+from decimal import Decimal
+from typing import Any, Tuple, Union
+
+import maya
+
+from trading_bots.contrib.money import Money
 
 DECIMALS = {
     # Fiat
@@ -18,39 +24,55 @@ DECIMALS = {
 }
 
 
-def get_iso_time_str(timestamp=None):
+def get_iso_time_str(timestamp: Union[int, float, str, datetime]=None) -> str:
     """Get the ISO time string from a timestamp or date obj. Returns current time str if no timestamp is passed"""
     if isinstance(timestamp, (int, float)):
-        timestamp = datetime.utcfromtimestamp(timestamp)
-    if timestamp is None:
-        timestamp = datetime.utcnow()
-    return timestamp.isoformat(sep=' ', timespec='seconds')
+        maya_dt = maya.MayaDT(timestamp)
+    elif isinstance(timestamp, str):
+        maya_dt = maya.when(timestamp)
+    elif timestamp is None:
+        maya_dt = maya.now()
+    else:
+        raise ValueError(f'`{type(timestamp)}` is not supported')
+    return maya_dt.iso8601()
 
 
-def truncate(value: float, decimal_places: int):
+def truncate(value: Decimal, n_digits: int) -> Decimal:
     """Truncates a value to a number of decimals places"""
-    return math.trunc(value * (10 ** decimal_places)) / (10 ** decimal_places)
+    return Decimal(math.trunc(value * (10 ** n_digits))) / (10 ** n_digits)
 
 
-def truncate_to(value: float, currency: str):
+def truncate_to(value: Decimal, currency: str) -> Decimal:
     """Truncates a value to the number of decimals corresponding to the currency"""
     decimal_places = DECIMALS.get(currency.upper(), 2)
     return truncate(value, decimal_places)
 
 
-def spread_value(value: float, spread_p: float):
+def truncate_money(money: Money) -> Money:
+    """Truncates money amount to the number of decimals corresponding to the currency"""
+    amount = truncate_to(money.amount, money.currency)
+    return Money(amount, money.currency)
+
+
+def spread_value(value: Decimal, spread_p: Decimal) -> Tuple[Decimal, Decimal]:
     """Returns a lower and upper value separated by a spread percentage"""
     upper = value * (1 + spread_p)
     lower = value / (1 + spread_p)
     return lower, upper
 
 
-def validate(name: str, value, condition: bool):
+def spread_money(money: Money, spread_p: Decimal) -> Tuple[Money, Money]:
+    """Returns a lower and upper money amount separated by a spread percentage"""
+    upper, lower = spread_value(money.amount, spread_p)
+    return Money(upper, money.currency), Money(lower, money.currency)
+
+
+def validate(name: str, value: Any, condition: bool) -> None:
     """Validates value on condition"""
     assert condition, f'{name} is invalid! ({name}: {value})'
 
 
-def validate_age(name: str, tolerance, from_timestamp, to_timestamp):
+def validate_age(name: str, tolerance: float, from_timestamp: float, to_timestamp: float) -> None:
     """Check if age is valid (within tolerance)"""
     age = to_timestamp - from_timestamp
     assert age <= tolerance, f'{name} is too old! (Age: {age} > Tolerance: {tolerance})'

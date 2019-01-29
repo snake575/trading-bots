@@ -7,14 +7,16 @@ name = "pypi"
 cached-property = "*"
 click = "*"
 jinja2 = "*"
+maya = "*"
 pygogo = "*"
 pyyaml = "*"
 requests = "*"
 simple-settings = "*"
-trading-api-wrappers = "*"
 stringcase = "*"
+trading-api-wrappers = "*"
 
 [dev-packages]
+coverage = "*"
+pytest = "*"
 trading-bots = {editable = true, path = "."}
 twine = "*"
-pytest = "*"

@@ -1,11 +1,12 @@
 from trading_bots.bots import Bot
-from trading_bots.contrib.clients import Market, Side
-from trading_bots.contrib.clients import bitstamp, buda
-from trading_bots.utils import truncate_to, get_iso_time_str
+from trading_bots.contrib.models import Side, Money
+from trading_bots.contrib.exchanges import bitstamp, buda
+from trading_bots.utils import truncate_to, get_iso_time_str, truncate_money
 import pandas as pd
 import talib
 import time
 from operator import itemgetter
+import maya
 
 
 class TechnicalAnalysis(Bot):
@@ -15,38 +16,35 @@ class TechnicalAnalysis(Bot):
     ]
 
     def _setup(self, config):
-        # Set market
-        self.market = Market(config['market'])
+        # Set buda trading client
+        client_params = dict(timeout=self.timeout)
+        self.buda = buda.BudaTrading(config['market'], client_params, self.dry_run, self.log, self.store)
+        self.store_keys = ('trades', self.buda.market.code.lower())
+        # Set reference market client
+        self.candle_interval = config['reference']['candle_interval']
+        self.reference = self._get_market_client(config['reference']['name'], config['reference']['market'])
+        assert self.reference.market.base == self.buda.market.base
         # Init variables
-        self.base_amount, self.quote_amount = config['amounts']['max_base'],  config['amounts']['max_quote']
-        self.store_keys = ('trades', self.market.code.lower())
+        self.max_base = Money(config['amounts']['max_base'], self.buda.market.base)
+        self.max_quote = Money(config['amounts']['max_quote'], self.buda.market.quote)
         self.position = self.store.get('position') or dict(status='closed')
         # Set talib configs
-        talib_config = config['talib']
-        self.bbands_periods = talib_config['bbands']['periods']
-        self.rsi_periods = talib_config['rsi']['periods']
-        self.rsi_overbought = talib_config['rsi']['overbought']
-        self.rsi_oversold = talib_config['rsi']['oversold']
-        # Set buda trading client
-        self.buda = buda.BudaTrading(
-            self.market, dry_run=self.dry_run, timeout=self.timeout, logger=self.log, store=self.store)
-        # Set reference market client
-        reference_config = config['reference']
-        self.candle_interval = config['reference']['candle_interval']
-        self.reference = self._get_market_client(reference_config['name'], reference_config['market'])
-        assert self.reference.market.base == self.market.base
+        self.bbands_periods = config['talib']['bbands']['periods']
+        self.rsi_periods = config['talib']['rsi']['periods']
+        self.rsi_overbought = config['talib']['rsi']['overbought']
+        self.rsi_oversold = config['talib']['rsi']['oversold']
 
     def _algorithm(self):
         # Update candle data and TA indicators
         self.log.info(f'Getting trades from {self.reference.name} {self.reference.market.code}')
-        from_time = time.time() - 60*60*24
+        from_time = maya.when('1 day ago').epoch
         trades = self.get_trades(from_time)
         # Create pandas DataFrame from trades and set date as index
         df = pd.DataFrame(trades)
         df.index = df.timestamp.apply(lambda x: pd.datetime.utcfromtimestamp(x))
         # Build 5min candles from trades DataFrame [open, high, close, low]
         df = df.rate.resample(self.candle_interval).ohlc()
-        # Calculate Bolliger Bands and RSI from talib
+        # Calculate Bollinger Bands and RSI from talib
         df['bb_lower'], df['bb_middle'], df['bb_upper'] = talib.BBANDS(df.close, timeperiod=self.bbands_periods)
         df['rsi'] = talib.RSI(df.close, timeperiod=self.rsi_periods)
         lower = self.truncate_price(df.bb_lower[-1])
@@ -61,23 +59,29 @@ class TechnicalAnalysis(Bot):
             if df.close[-1] < df.bb_lower[-1] and df.rsi[-1] < self.rsi_oversold:
                 # Last price is lower than the lower BBand and RSI is oversold, BUY!
                 self.log.info(f'Market oversold! BUY!')
-                amount = self.get_amount(Side.SELL)
-                tx = self.buda.place_market_order(Side.SELL, amount)
-                self.position = {
-                    'status': 'open',
-                    'side': Side.SELL.value,
-                    'amount': tx.amount.amount
-                }
-            elif df.close[-1] > df.bb_upper[-1] and df.rsi[-1] > self.rsi_overbought:
-                # Last price is higher than the upper BBand and RSI is overbought, SEll!
-                self.log.info(f'Market overbought! SEll!')
                 amount = self.get_amount(Side.BUY)
-                tx = self.buda.place_market_order(Side.BUY, amount)
-                self.position = {
-                    'status': 'open',
-                    'side': Side.BUY.value,
-                    'amount': tx.amount.amount
-                }
+                if amount >= self.buda.min_order_amount:
+                    tx = self.buda.place_market_order(Side.BUY, amount)
+                    self.position = {
+                        'status': 'open',
+                        'side': Side.BUY.value,
+                        'amount': repr(tx.amount)
+                    }
+                else:
+                    self.log.warning(f'Available amount is lower than minimum order amount')
+            elif df.close[-1] > df.bb_upper[-1] and df.rsi[-1] > self.rsi_overbought:
+                # Last price is higher than the upper BBand and RSI is overbought, SELL!
+                self.log.info(f'Market overbought! SELL!')
+                amount = self.get_amount(Side.SELL)
+                if amount >= self.buda.min_order_amount:
+                    tx = self.buda.place_market_order(Side.SELL, amount)
+                    self.position = {
+                        'status': 'open',
+                        'side': Side.SELL.value,
+                        'amount': repr(tx.amount)
+                    }
+                else:
+                    self.log.warning(f'Available amount is lower than minimum order amount')
             else:
                 self.log.info(f'Market conditions unmet to open position')
         else:
@@ -85,23 +89,29 @@ class TechnicalAnalysis(Bot):
             if self.position['side'] == Side.BUY.value and df.rsi[-1] >= 30:
                 # RSI is back to normal, close Buy position
                 self.log.info(f'Market is back to normal, closing position')
-                amount = self.position['amount']
-                tx = self.buda.place_market_order(Side.SELL, amount)
-                remaining = self.position['amount'] - tx.amount.amount
-                if remaining == 0:
-                    self.position = {'status': 'closed'}
+                amount = Money.loads(self.position['amount'])
+                if amount >= self.buda.min_order_amount:
+                    tx = self.buda.place_market_order(Side.SELL, amount)
+                    remaining = amount - tx.amount
+                    if remaining < self.buda.min_order_amount:
+                        self.position = {'status': 'closed'}
+                    else:
+                        self.position['amount'] = remaining
                 else:
-                    self.position['amount'] = remaining
+                    self.log.warning(f'Available amount is lower than minimum order amount')
             elif self.position['side'] == Side.SELL.value and df.rsi[-1] <= 70:
                 # RSI is back to normal, close Sell position
                 self.log.info(f'Market is back to normal, closing position')
-                amount = self.position['amount']
-                tx = self.buda.place_market_order(Side.BUY, amount)
-                remaining = self.position['amount'] - tx.amount.amount
-                if remaining == 0:
-                    self.position = {'status': 'closed'}
+                amount = Money.loads(self.position['amount'])
+                if amount >= self.buda.min_order_amount:
+                    tx = self.buda.place_market_order(Side.BUY, amount)
+                    remaining = amount - tx.amount
+                    if remaining < self.buda.min_order_amount:
+                        self.position = {'status': 'closed'}
+                    else:
+                        self.position['amount'] = repr(remaining)
                 else:
-                    self.position['amount'] = remaining
+                    self.log.warning(f'Available amount is lower than minimum order amount')
             else:
                 self.log.info(f'Market conditions unmet to close position')
         self.store.set('position', self.position)
@@ -111,10 +121,15 @@ class TechnicalAnalysis(Bot):
 
     def get_amount(self, side):
         if side == Side.BUY:
-            return self.truncate_amount(self.base_amount)
+            available_quote = self.buda.wallets.quote.fetch_balance().free
+            amount_quote = min(self.max_quote, available_quote)
+            amount_buy = truncate_money(self.buda.fetch_order_book().quote(side, amount_quote).base_amount)
+            return amount_buy
         elif side == Side.SELL:
-            price = self.buda.quote_price(side, self.quote_amount)
-            return self.truncate_amount(self.quote_amount / price)
+            available_base = self.buda.wallets.base.fetch_balance().free
+            amount_base = min(self.max_base, available_base)
+            amount_sell = truncate_money(amount_base)
+            return amount_sell
 
     def get_trades(self, from_timestamp: float):
         # Getting previous trades from store
@@ -161,7 +176,7 @@ class TechnicalAnalysis(Bot):
                 trades.extend(last_trades)
             else:
                 self.log.debug('No trades found')
-            # Sort entries based on timestamp, then filter on n_days_timestamp
+            # Sort entries based on timestamp
             trades.sort(key=itemgetter('timestamp'))
             # last trades count
             trades_n = len(last_trades)
@@ -203,7 +218,7 @@ class TechnicalAnalysis(Bot):
         raise NotImplementedError(f'Client {name} not found!')
 
     def truncate_amount(self, value):
-        return truncate_to(value, self.market.base)
+        return truncate_to(value, self.buda.market.base)
 
     def truncate_price(self, value):
-        return truncate_to(value, self.market.quote)
+        return truncate_to(value, self.buda.market.quote)

@@ -59,7 +59,7 @@ prices:
   sell_multiplier: 1.05     # Price multiplier for sell order, ie: 0.95 is 5% under reference
 amounts:
  max_base: 1                #  Max amount on sell order, ie: base is BTC on BTCCLP
- max_quote: 25000000        #  Max amount on buy order, ie: quote is CLP on BTCCLP
+ max_quote: 2500000        #  Max amount on buy order, ie: quote is CLP on BTCCLP
 ```
 
 ## Bot Strategy
@@ -70,20 +70,21 @@ amounts:
 
 ```python
 def _setup(self, config):
-    # Set market
-    self.market = Market(config['market'])
-    # Init variables
-    self.bid_price, self.ask_price = None, None
-    self.base_amount, self.quote_amount = None, None
     # Set buda trading client
-    self.buda = buda.BudaTrading(
-        self.market, dry_run=self.dry_run, timeout=self.timeout, logger=self.log, store=self.store)
-    # Set converter
-    self.converter = OpenExchangeRates(timeout=self.timeout)
+    client_params = dict(timeout=self.timeout)
+    self.buda = buda.BudaTrading(config['market'], client_params, self.dry_run, self.log, self.store)
     # Set reference market client
-    reference_config = config['reference']
-    self.reference = self._get_market_client(reference_config['name'], reference_config['market'])
-    assert self.reference.market.base == self.market.base
+    self.reference = self._get_market_client(config['reference']['name'], config['reference']['market'])
+    assert self.reference.market.base == self.buda.market.base
+    # Set converter
+    app_id = settings.credentials['OpenExchangeRates']['app_id']
+    self.converter = OpenExchangeRates(return_decimal=True, client_params=dict(app_id=app_id))
+    # Set price multipliers
+    self.buy_multiplier = Decimal(str(config['prices']['buy_multiplier']))
+    self.sell_multiplier = Decimal(str(config['prices']['sell_multiplier']))
+    # Set max amounts
+    self.max_base = Money(config['amounts']['max_base'], self.buda.market.base)
+    self.max_quote = Money(config['amounts']['max_quote'], self.buda.market.quote)
 ```
 
 - Initializes placeholders for our `prices` and `amounts`.
@@ -97,40 +98,66 @@ We describe our instructions following our desired automation logic:
 def _algorithm(self):
     # Setup
     self.log.info(f'Preparing prices using {self.reference.name} {self.reference.market.code}')
-    self.prepare_prices()
+    ref_bid, ref_ask = self._get_reference_prices()
+    self.log.info(f'Reference prices on {self.reference.name}: Bid: {ref_bid} Ask: {ref_ask}')
+    # Set offset prices from reference and price multiplier
+    price_buy = truncate_money(ref_bid * self.buy_multiplier)
+    price_sell = truncate_money(ref_ask * self.sell_multiplier)
+    self.log.info(f'{self.buda.market} calculated prices: Buy: {price_buy} Sell: {price_sell}')
     # Cancel open orders
     self.log.info('Closing open orders')
-    self.cancel_orders()
+    self.buda.cancel_all_orders()
     # Get available balances
-    self.prepare_amounts()
-    # Start strategy
+    self.log.info(f'Preparing amounts')
+    # Fetch available balances
+    available_base = self.buda.wallets.base.fetch_balance().free
+    available_quote = self.buda.wallets.quote.fetch_balance().free
+    # Adjust amounts to max in config
+    amount_base = min(self.max_base, available_base)
+    amount_quote = min(self.max_quote, available_quote)
+    self.log.info(f'Amounts | Bid: {amount_base} | Ask: {amount_quote}')
+    # Get order buy and sell amounts
+    # *quote amount must be converted to base
+    amount_buy = truncate_money(Money(amount_quote / price_buy, self.buda.market.base))
+    amount_sell = truncate_money(amount_base)
+    self.log.info(f'Amounts | Buy {amount_buy} | Sell {amount_sell}')
+    # PLACE ORDERS
     self.log.info('Starting order deployment')
-    # Deploy orders
-    deploy_list = self.get_deploy_list()
-    self.deploy_orders(deploy_list)
+    if amount_buy >= self.buda.min_order_amount:
+        self.buda.place_limit_order(side=Side.BUY, amount=amount_buy, price=price_buy)
+    if amount_sell >= self.buda.min_order_amount:
+        self.buda.place_limit_order(side=Side.SELL, amount=amount_sell, price=price_sell)
+
+def _get_reference_prices(self):
+    ticker = self.reference.fetch_ticker()
+    ref_bid, ref_ask = ticker.bid, ticker.ask
+    # Convert reference_price if reference market differs from current market
+    if self.reference.market != self.buda.market:
+        # Get conversion rate (eg CLP/USD from OpenExchangeRates)
+        rate = self.converter.get_rate_for(self.reference.market.quote, self.buda.market.quote)
+        self.log.info(f'{self.reference.market.quote}/{self.buda.market.quote} rate: {rate:.2f}'
+                      f' from {self.converter.name}')
+        # Get market price according to reference (eg BTC/CLP converted from converter's BTC/USD)
+        ref_bid = Money(ref_bid.amount * rate, self.buda.market.quote)
+        ref_ask = Money(ref_ask.amount * rate, self.buda.market.quote)
+    return ref_bid, ref_ask
 ```
 
 
 **Prepare prices**
-
-- First, we go fetch our reference price from the selected `exchange` and `market` quoting its orderbook.
+- First, we fetch the price `ticker` from our reference `exchange` and `market`.
 - Our reference price gets converted to our market's quote currency and is saved as `ref_bid` and `ref_ask`.
-- We offset our reference prices using our `multipliers` from configs and save them as `bid_price` and `ask_price`.
+- We offset our reference prices using our `multipliers` from configs and save them as `price_buy` and `price_sell`.
 
-**Cancel orders**
-
+**Prepare order amounts:**
 - Cancel all pending orders at the selected market on Buda.com. This frees balance to use on our orders.
+- Get available balance amounts from Buda.com's API.
+- Validates against max allowed amount from our configs `max_base` and `max_quote`.
+- Sets the amounts to be used on orders as `amount_buy` and `amount_sell`.
 
-**Prepare Amounts**
-- Get amounts from configs to dictate maximum allowed to spend on each order.
-- Validates against available balance.
-- Sets the amount to be used on orders as quote_amount and base_amount.
-
-**Get Deploy List**
-- Builds a list of orders to be deployed.
-
-**Deploy Orders**
-- Places our orders at the exchange (You can test with `dry_run=True` flag on global settings to be sure).
+**Place orders:**
+- Checks order amounts against minimum allowed by Buda.com.
+- Places our orders at the exchange (You can test with `dry_run: True` flag on global settings to be safe).
 
 ### Abort
 
@@ -140,9 +167,9 @@ As important as our strategy is providing abort instructions which is the piece 
 def _abort(self):
     self.log.error('Aborting strategy, cancelling all orders')
     try:
-        self.cancel_orders()
+        self.buda.cancel_all_orders()
     except Exception:
-        self.log.exception(f'Failed!, some orders might not be cancelled')
+        self.log.critical(f'Failed!, some orders might not be cancelled')
         raise
     else:
         self.log.info(f'All open orders were cancelled')

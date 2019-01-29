@@ -1,4 +1,5 @@
-import trading_api_wrappers as wrappers
+import trading_api_wrappers as api
+from cached_property import cached_property
 
 from .base import Converter
 
@@ -9,12 +10,10 @@ __all__ = [
 
 class OpenExchangeRates(Converter):
     name = 'OpenExchangeRates'
-    slug = 'open-exchange-rates'
 
-    def __init__(self, return_decimal: bool=False, timeout: int=None, retry: bool=None):
-        super().__init__(return_decimal)
-        app_id = self.credentials['app_id']
-        self.client = wrappers.OXR(app_id, timeout, retry)
+    @cached_property
+    def client(self) -> api.OXR:
+        return api.OXR(**self.client_params)
 
     def _get_rate(self, currency: str, to: str):
         response = self.client.latest(base=currency.lower(), symbols=[to.lower()])
