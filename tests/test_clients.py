@@ -113,10 +113,12 @@ class TestOrderBook:
 
     @skip_allowed_errors
     def test_order_book_quote_average_price(self, side):
+        # TODO: add quotation tests
         amount = Money(1, order_book.market.base)
-        quote = order_book.quote_average_price(side, amount)
-        assert isinstance(quote, Money)
-        assert order_book.market.quote == quote.currency
+        quote = order_book.quote(side, amount)
+        average_price = quote.average_price
+        assert isinstance(average_price, Money)
+        assert order_book.market.quote == average_price.currency
 
     @skip_allowed_errors
     def test_order_book_quote_spread_details(self):
