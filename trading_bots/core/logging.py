@@ -1,5 +1,6 @@
 import logging
 import time
+from logging import Logger
 
 import pygogo
 
@@ -22,5 +23,5 @@ going = pygogo.Gogo(
 )
 
 
-def get_logger(name: str='base'):
+def get_logger(name: str='base') -> Logger:
     return going.get_logger(name)

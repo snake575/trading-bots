@@ -1,8 +1,10 @@
+import abc
 from decimal import Decimal
+from typing import Dict, Union
 
-from trading_bots.conf import settings
-from trading_bots.contrib.money import Money
 from trading_bots.core.logging import get_logger
+from ..clients import ClientWrapper
+from ..money import Money
 
 __all__ = [
     'ConverterRateError',
@@ -11,7 +13,7 @@ __all__ = [
 ]
 
 logger = get_logger(__name__)
-Number = (float, Decimal)
+Number = Union[float, Decimal]
 
 
 class ConverterRateError(Exception):
@@ -24,14 +26,10 @@ class ConverterValidationError(Exception):
         super().__init__(f'{converter} rate is invalid!: {rate}')
 
 
-class Converter:
-    name = ''
-    slug = ''
+class Converter(ClientWrapper, abc.ABC):
 
-    def __init__(self, return_decimal: bool=False, **kwargs):
-        assert self.name, 'A converter must have a name!'
-        credentials = getattr(settings, 'credentials', {})
-        self.credentials = credentials.get(self.name)
+    def __init__(self, return_decimal: bool=False, client_params: Dict=None, name: str=None):
+        super().__init__(client_params, name)
         self.return_decimal = return_decimal
 
     def _format_number(self, value: (str, Number)) -> Number:
@@ -40,8 +38,9 @@ class Converter:
                 return Decimal(value)
         return float(value)
 
-    def _get_rate(self, currency: str, to: str) -> (str, Number):
-        raise NotImplementedError
+    @abc.abstractmethod
+    def _get_rate(self, currency: str, to: str) -> Union[str, Number]:
+        pass
 
     def get_rate_for(self, currency: str, to: str, reverse: bool=False) -> Number:
         """Get current market rate for currency"""
@@ -64,7 +63,7 @@ class Converter:
         rate = self._format_number(rate)
 
         try:  # Validate rate value
-            assert isinstance(rate, Number)
+            assert isinstance(rate, (float, Decimal))
             assert rate > 0
         except AssertionError as e:
             raise ConverterValidationError(self.name, rate) from e

@@ -9,7 +9,6 @@ __all__ = [
 
 class BitcoinAverage(Converter):
     name = 'Bitcoin Average'
-    slug = 'bitcoin-average'
     base_url = 'https://apiv2.bitcoinaverage.com'
     symbol_set = 'global'
 

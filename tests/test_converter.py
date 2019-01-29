@@ -14,8 +14,8 @@ CRYPTO_CONVERTERS = [
 ]
 
 FIAT_CONVERTERS = [
-    converters.CurrencyLayer(CREDENTIALS.get('CurrencyLayer')),
-    converters.OpenExchangeRates(CREDENTIALS.get('OpenExchangeRates')),
+    converters.CurrencyLayer(),
+    converters.OpenExchangeRates(),
 ]
 
 Market = namedtuple('market', 'base quote id')
@@ -35,12 +35,12 @@ FIAT_MARKETS = [
 ]
 
 
-@pytest.fixture(params=CRYPTO_CONVERTERS, ids=attrgetter('slug'))
+@pytest.fixture(params=CRYPTO_CONVERTERS, ids=attrgetter('name'))
 def crypto_converter(request):
     return request.param
 
 
-@pytest.fixture(params=FIAT_CONVERTERS, ids=attrgetter('slug'))
+@pytest.fixture(params=FIAT_CONVERTERS, ids=attrgetter('name'))
 def fiat_converter(request):
     return request.param
 

@@ -1,4 +1,5 @@
-import trading_api_wrappers as wrappers
+import trading_api_wrappers as api
+from cached_property import cached_property
 
 from .base import Converter
 
@@ -9,11 +10,10 @@ __all__ = [
 
 class CoinMarketCap(Converter):
     name = 'CoinMarketCap'
-    slug = 'coinmarketcap'
 
-    def __init__(self, return_decimal: bool=False, timeout: int=None, retry: bool=None):
-        super().__init__(return_decimal)
-        self.client = wrappers.CoinMarketCap(timeout, retry)
+    @cached_property
+    def client(self) -> api.CoinMarketCap:
+        return api.CoinMarketCap(**self.client_params)
 
     def _get_rate(self, currency: str, to: str):
         rate = self.client.price(currency, convert=to)

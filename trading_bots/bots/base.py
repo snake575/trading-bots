@@ -1,6 +1,7 @@
 import abc
 import time
 from logging import Logger
+from typing import Dict, Optional, Union
 
 from .logging import get_logger
 from .logging import setup_logger
@@ -12,44 +13,44 @@ from ..utils import get_iso_time_str
 
 class Bot(abc.ABC):
     """Class representing a base Trading Bot and its logic."""
-    label = ''
-    verbose_name = ''
-    config_file = ''
+    label: str = None
+    verbose_name: str = None
+    config_file: str = None
 
-    def __init__(self, config: dict=None, config_name: str=None, logger: Logger=None):
+    def __init__(self, config: Dict=None, config_name: str=None, logger: Logger=None):
         assert self.label, 'A Bot object must have a label attribute!'
         # Set configuration
         self.config = config
         self.config_name = config_name or defaults.BOT_CONFIG
         # Configs
         self.dry_run = getattr(settings, 'dry_run', False)
-        self.timeout = getattr(settings, 'timeout')
-        self.env = self.get_env()
+        self.timeout: Optional[int] = getattr(settings, 'timeout')
+        self.env: str = self.get_env()
         # Set logger
-        self.log = logger or self.get_logger()
+        self.log: Logger = logger or self.get_logger()
         self.setup_logger(self.log)
         # Set store
         self.store = get_store(self.log)
         # Time
-        self.timestamp = None
-        self.run_time = None
+        self.timestamp: Union[int, float] = None
+        self.run_time: float = None
         # User setup
         self._setup(self.config)
 
-    def _setup(self, config: dict):
+    def _setup(self, config: dict) -> None:
         pass
 
     @abc.abstractmethod
-    def _algorithm(self):
+    def _algorithm(self) -> None:
         pass
 
-    def _abort(self):
+    def _abort(self) -> None:
         pass
 
-    def _post_exec(self):
+    def _post_exec(self) -> None:
         pass
 
-    def execute(self):
+    def execute(self) -> None:
         self.timestamp = int(time.time())
         msg = f'Starting {self.label} {self.timestamp}: {get_iso_time_str()} '
         self.log.info(f'{msg:-<80}')
@@ -86,24 +87,24 @@ class Bot(abc.ABC):
             self.log.critical('Failed to abort!', exc_info=True)
             raise
 
-    def setup_logger(self, logger: Logger):
+    def setup_logger(self, logger: Logger) -> None:
         logger_kwargs = self._logger_kwargs()
         self.log = setup_logger(logger, **logger_kwargs)
 
-    def _get_logger_name(self):
+    def _get_logger_name(self) -> str:
         return f'{self.label}.{self.config_name}'
 
-    def get_logger(self):
+    def get_logger(self) -> Logger:
         logger_name = self._get_logger_name()
         return get_logger(logger_name)
 
-    def _logger_kwargs(self):
+    def _logger_kwargs(self) -> Dict:
         return {'tag': settings.tag, 'env': self.env, 'bot': self.label, 'config': self.config_name}
 
-    def check_dry_run(self):
+    def check_dry_run(self) -> bool:
         if self.dry_run:
             self.log.warning('DRY RUN!')
         return self.dry_run
 
-    def get_env(self):
+    def get_env(self) -> str:
         return 'TEST' if self.dry_run else 'LIVE'
