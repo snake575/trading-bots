@@ -505,7 +505,6 @@ class TradingClient(MarketClient, abc.ABC):
         order_ids = [o.id for o in self.fetch_all_open_orders()]
         return self.cancel_orders(order_ids)
 
-    @cached_property
     def _min_order_amount(self) -> Money:
         try:
             amount = self.min_order_amount_mapping[self.market.base]
