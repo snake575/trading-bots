@@ -145,14 +145,41 @@ class KrakenWallet(WalletClient, KrakenAuth):
         'LTC': Fee(base=Money('0.01', 'LTC')),
     }
 
+    asset_mapping = {
+        'BTC': 'XXBT',
+        'ETH': 'XETH',
+        'XLM': 'XXLM',
+        'USD': 'ZUSD',
+    }
+
     def _balance(self) -> Balance:
-        self.log.warning('Kraken only returns total balance')
-        asset = self.currency.replace('BTC', 'XXBT').replace('ETH', 'XETH').replace('XLM', 'XXLM').replace('USD', 'ZUSD')
+        self.log.warning('Kraken only returns total balance, fetching open orders to calculate free balance')
+        asset = self.asset_mapping.get(self.currency)
+        if asset is None:
+            asset = self.currency
         balance = self.client.balance()
+        if balance['result'].get(asset) == None:
+            zero = Money(Decimal('0.0'), self.currency)
+            return Balance(total=zero, free=zero, used=zero, info='balance not found')
+        total = Decimal(balance['result'][asset])
+        free = total
+        used = Decimal('0.0')
+        open_orders = self.client.open_orders()['result']['open']
+        for order in open_orders.values():
+            o_market = self._get_market_from_pair(order['descr']['pair'])
+            o_side = Side(order['descr']['type'])
+            o_amount = Decimal(order['vol'])
+            o_price = Decimal(order['descr']['price'])
+            if o_side == Side.SELL and asset == o_market.base:
+                free -= o_amount
+                used += o_amount
+            elif o_side == Side.BUY and asset == o_market.quote:
+                free -= o_amount * o_price
+                used += o_amount * o_price
         return Balance(
-            total=balance['result'][asset],
-            free=None,
-            used=None,
+            total=Money(total, self.currency),
+            free=Money(free, self.currency),
+            used=Money(used, self.currency),
         )
 
     def _deposits(self, limit: int=None) -> List[Deposit]:
