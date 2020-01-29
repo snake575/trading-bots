@@ -489,11 +489,11 @@ class TradingClient(MarketClient, abc.ABC):
                 cancelled_orders.append(orders_to_cancel)
                 orders_to_cancel.clear()
             else:
-                for i, order_id in enumerate(orders_to_cancel):
+                for order_id in orders_to_cancel:
                     self._cancel_order(order_id)
                     cancelled_orders.append(order_id)
-                    orders_to_cancel.pop(i)
         except Exception as e:
+            orders_to_cancel = list(set(orders_to_cancel) - set(cancelled_orders))
             msg = f'Failed to cancel {len(orders_to_cancel)} orders on {self.name}: ids={orders_to_cancel}'
             raise self.exception(OrderNotFound, msg, e) from e
 
