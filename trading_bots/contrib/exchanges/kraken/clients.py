@@ -21,6 +21,9 @@ __all__ = [
 
 class KrakenBase(BaseClient, ABC):
     name: str = 'Kraken'
+    pairs_asset_map = {
+        'BTC': 'XBT',
+    }
 
     def _markets(self) -> Set[Market]:
         # NOTE: Doesn't support Kraken dark pool markets
@@ -50,6 +53,15 @@ class KrakenBase(BaseClient, ABC):
                 yield self._parse_common_currency(asset['altname'])
 
         return set(generate_assets())
+
+    def _get_market_from_pair(self, pair):
+        for market in self.markets:
+            m = market.code
+            for asset, other in self.pairs_asset_map.items():
+                m = m.replace(asset, other)
+            if m == pair:
+                return market
+        raise KeyError
 
 
 class KrakenPublic(KrakenBase):
@@ -196,7 +208,11 @@ class KrakenTrading(TradingClient, KrakenMarketBase, KrakenAuth):
         return self._parse_order(order)
 
     def _open_orders(self, limit: int=None) -> List[Order]:
-        orders = self.client.open_orders()['result']['open'].values()
+        query = self.client.open_orders()['result']['open']
+        orders = []
+        for txid, order in query.items():
+            order['id'] = txid
+            orders.append(order)
         return self._parse_orders_limit(orders, limit)
 
     def _closed_orders(self, limit: int=None) -> List[Order]:
@@ -217,7 +233,7 @@ class KrakenTrading(TradingClient, KrakenMarketBase, KrakenAuth):
 
     def _place_order(self, side: Side, order_type: OrderType, amount: Decimal, price: Decimal=None) -> Order:
         order = self.client.add_order(self.market_id, side.value, order_type.value, float(amount), float(price))
-        return self._parse_order(order)
+        return self._parse_placed_order(order)
 
     def _parse_order(self, order: Dict) -> Order:
         description = order['descr']
@@ -227,10 +243,7 @@ class KrakenTrading(TradingClient, KrakenMarketBase, KrakenAuth):
         except ValueError:
             order_type = None
         pair: str = description['pair']
-        if pair.startswith('USDT'):
-            market = Market('USDT', pair[:3])
-        else:
-            market = Market.from_code(pair)
+        market = self._get_market_from_pair(pair)
         maya_dt = maya.MayaDT(float(order['opentm']))
         amount = self.safe_money(order, 'vol', market.base)
         filled = self.safe_money(order, 'vol_exec', market.base)
@@ -258,6 +271,45 @@ class KrakenTrading(TradingClient, KrakenMarketBase, KrakenAuth):
             type=order_type,
             side=side,
             status=order['status'],
+            amount=amount,
+            remaining=remaining,
+            filled=filled,
+            cost=cost,
+            fee=fee,
+            price=price,
+            info=order,
+            timestamp=maya_dt.epoch,
+            datetime=maya_dt.datetime(),
+        )
+
+
+    def _parse_placed_order(self, order):
+        description = order['result']['descr']['order'].split()
+        if description[0] == 'buy':
+            side = Side.BUY
+        elif description[0] == 'sell':
+            side = Side.SELL
+        else:
+            raise ValueError
+        try:
+            order_type = OrderType(description[4])
+        except ValueError:
+            order_type = None
+        pair: str = description[2]
+        market = self._get_market_from_pair(pair)
+        maya_dt = maya.MayaDT(maya.now().epoch)
+        amount = Money(Decimal(description[1]), market.base)
+        filled = None
+        remaining = None
+        fee = None
+        cost = None
+        price = Money(Decimal(description[5]), market.quote)
+        return Order(
+            id=order['result']['txid'][0],
+            market=market,
+            type=order_type,
+            side=side,
+            status=OrderStatus.OPEN,
             amount=amount,
             remaining=remaining,
             filled=filled,
