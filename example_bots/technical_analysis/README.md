@@ -49,12 +49,13 @@ You can follow the install instructions [here](https://github.com/mrjbq7/ta-lib)
 
 Or you might also try these unofficial windows binaries for both 32-bit and 64-bit:
 
-https://www.lfd.uci.edu/~gohlke/pythonlibs/#ta-lib
+<https://www.lfd.uci.edu/~gohlke/pythonlibs/#ta-lib>
 
 Just download and move the file to your project folder and install, eg: (for python3.7 64bits, change versions accordingly)
+
 ```bash
-$ mv /path/to/TA_Lib‑0.4.17‑cp37‑cp37m‑win_amd64.whl /path/to/trading-bots
-$ pipenv install --skip-lock TA_Lib‑0.4.17‑cp37‑cp37m‑win_amd64.whl
+mv /path/to/TA_Lib‑0.4.17‑cp37‑cp37m‑win_amd64.whl /path/to/trading-bots
+pipenv install --skip-lock TA_Lib‑0.4.17‑cp37‑cp37m‑win_amd64.whl
 ```
 
 We are ready!
@@ -70,7 +71,6 @@ Copy the file `secrets.yml.example` and rename it to `secrets.yml`. Then fill wi
 - This library will create live orders at Buda.com cryptocurrency exchange. Please review the code and check all the parameters of your strategy before entering your keys and running the bot.
 - This bot makes use of a storage file. Default storage saves data as JSON objects inside store.json file found at the root of this project. This file could contain data essential for the correct execution of this strategy.
 
-
 ## Usage
 
 For more references, go to the [official documentation](https://github.com/budacom/trading-bots/blob/master/README.md).
@@ -80,6 +80,7 @@ For more references, go to the [official documentation](https://github.com/budac
 Found at `example_bots/technical_analysis/configs` folder. Its a yaml file that allows us to easily set parameters.
 
 **Example:**
+
 ```yml
 market: BTCCLP              # Buda.com market where orders will be placed
 reference:
@@ -99,8 +100,6 @@ amounts:
 ```
 
 ## Bot Strategy
-
-
 
 ### Setup
 
@@ -215,21 +214,22 @@ def _algorithm(self):
     self.store.set('position', self.position)
 ```
 
-
 **Building candles from trades**
+
 - Fetch trades from the selected `exchange` and `market`. Save to store.
 - Build DataFrame from trades array.
 - Resample trades to `candle_interval` set on config.
 - Build candles using pandas `ohlc` method.
 
 **TA-Lib indicators**
+
 - Calculate Bollinger Bands and RSI using talib and specified parameters on config.
 
 **Check Market conditions**
+
 - If position is closed, place a buy order if market is oversold according to indicators and RSI parameters on config. Save positon to store.
 - If position is closed, place a sell order if market is overbought according to indicators and RSI parameters on config. Save positon to store.
 - If position is open, close position if market conditions are back to normal according to position side.
-
 
 ### Abort
 
@@ -239,36 +239,42 @@ As important as our strategy is providing abort instructions which is the piece 
 def _abort(self):
     pass
 ```
+
 - Nothing to rollback, just exit.
 
 ## Running bots
 
 Test by running the desired bot once from console:
+
 ```bash
-$ python bots.py run TechnicalAnalysis
+python bots.py run TechnicalAnalysis
 ```
 
 Flag `--config` can be specified to change the default config file:
+
 ```bash
-$ python bots.py run TechnicalAnalysis --config /path/to/technical-analysis_other.yml
+python bots.py run TechnicalAnalysis --config /path/to/technical-analysis_other.yml
 ```
 
 Now, we need this to run on a loop, we should use `loop` option indicating `--interval` as seconds:
+
 ```bash
-$ python bots.py loop TechnicalAnalysis --interval 300
+python bots.py loop TechnicalAnalysis --interval 300
 ```
 
 Running multiple bots for different markets is possible using multiple shells and config files:
 
 Shell 1:
+
 ```bash
-$ python bots.py loop TechnicalAnalysis --interval 300 --config technical-analysis_btcclp.yml
-```
-Shell 2:
-```bash
-$ python bots.py loop TechnicalAnalysis --interval 300 --config technical-analysis_ethclp.yml
+python bots.py loop TechnicalAnalysis --interval 300 --config technical-analysis_btcclp.yml
 ```
 
+Shell 2:
+
+```bash
+python bots.py loop TechnicalAnalysis --interval 300 --config technical-analysis_ethclp.yml
+```
 
 ## Contributing
 

@@ -10,9 +10,7 @@
 ![PyPI - Status](https://img.shields.io/pypi/status/trading-bots.svg)
 [![Updates](https://pyup.io/repos/github/budacom/trading-bots/shield.svg)](https://pyup.io/repos/budacom/delta575/trading-bots/)
 
-
 **Trading-Bots** is a general purpose *mini-framework* for developing an [algorithmic trading bot](https://en.wikipedia.org/wiki/Algorithmic_trading) on **crypto currencies**, thus it makes no assumption of your trading goals.
-
 
 ## Installation
 
@@ -23,12 +21,11 @@
 
 To install Trading-Bots, simply use `pipenv` (or `pip`, of course):
 
-    $ pipenv install trading-bots
+    pipenv install trading-bots
 
 Remember to activate the virtual environment
 
-    $ pipenv shell
-
+    pipenv shell
 
 ## Getting started
 
@@ -38,12 +35,12 @@ We'll assume you have Trading-Bots installed already, and your virtual environme
 
 ### Create a project
 
-If this is your first time, you’ll have to take care of some initial setup. Namely, you’ll need to 
+If this is your first time, you’ll have to take care of some initial setup. Namely, you’ll need to
 auto-generate some code that establishes a Trading-Bots project.
 
 From the command line, cd into a directory where you’d like to store your bots, then run the following command:
 
-    $ bots-admin startproject
+    bots-admin startproject
 
     TRADING BOTS 🤖
     ===============
@@ -73,19 +70,19 @@ These files are:
 
 ### Create a new bot
 
-Now that your "project" is set up, you're set to start doing work. 
+Now that your "project" is set up, you're set to start doing work.
 
 Let's create a simple bot that fetches your **Bitcoin** balance on [Buda.com](https://www.buda.com)!
 
-Each bot you write in Trading-Bots consists of a Python package that follows a certain convention. Trading-Bots comes 
-with a utility that automatically generates the basic directory structure of a bot, so you can focus on writing code 
+Each bot you write in Trading-Bots consists of a Python package that follows a certain convention. Trading-Bots comes
+with a utility that automatically generates the basic directory structure of a bot, so you can focus on writing code
 rather than creating directories.
 
 Your bots can live anywhere on your Python path. In this tutorial, we’ll create our bot as a submodule of `my_project`.
 
 To create your bot, make sure you're in the same directory as `bots.py` and type this command:
 
-    $ python bots.py createbot
+    python bots.py createbot
 
     TRADING BOTS 🤖
     ===============
@@ -103,9 +100,10 @@ That’ll create a directory `my_bot`, which is laid out like this:
 
 This directory structure will house the `MyBot` bot.
 
-You'll also have to *"install"* your new bot, by adding it to the project's `settings.yml` file. 
+You'll also have to *"install"* your new bot, by adding it to the project's `settings.yml` file.
 
 `settings.yml`
+
 ```yaml
 installed_bots:
   - my_project.my_bot.bot.MyBot  
@@ -116,6 +114,7 @@ Configure you Buda.com account's `API_KEY` and `API_SECRET` onto `secrets.yml` c
 > You can request your API credentials on you account's profile on [Buda.com](hhtps://www.buda.com)
 
 `secrets.yml`
+
 ```yaml
 credentials:
   Buda:
@@ -128,6 +127,7 @@ credentials:
 Now let's write the code to fetch the Bitcoin balance on [Buda.com](https://www.buda.com) implementing the Bot's algorithm. The Bot's logic resides in the `my_project/my_bot/bot.py` module created by the `createbot` command:
 
 `my_project/my_bot/bot.py`
+
 ```py
 # Base class that all Bots must inherit from
 from trading_bots.bots import Bot
@@ -168,7 +168,7 @@ class MyBot(Bot):
 
 Run the bot!
 
-    $ python bots.py run MyBot
+    python bots.py run MyBot
 
     TRADING BOTS 🤖
     ===============
@@ -187,7 +187,7 @@ Run the bot!
 
 Or put it to work in a loop!
 
-    $ python bots.py loop MyBot --interval 5
+    python bots.py loop MyBot --interval 5
 
     TRADING BOTS 🤖
     ===============
@@ -215,6 +215,7 @@ Or put it to work in a loop!
 We can make our Bot a little more modular, let's now fetch our Ethereum balance adding a `currency` key on `MyBot` default config file on `my_project/my_bot/configs/default.yml`:
 
 `my_project/my_bot/configs/default.yml`
+
 ```yaml
 currency: ETH
 ```
@@ -222,6 +223,7 @@ currency: ETH
 Now use the new `currency` config on `MyBot` by modifying the Bot's logic:
 
 `my_project/my_bot/bot.py`
+
 ```py
 from trading_bots.bots import Bot
 from trading_bots.conf import settings
@@ -233,12 +235,12 @@ class MyBot(Bot):
     label = 'MyBot'
 
     def _setup(self, config):
-        # Get currency from config 
+        # Get currency from config
         self.currency = config['currency']
 
         # Get API_KEY and API_SECRET from credentials
         credentials = settings.credentials['Buda']
-        key = credentials['key']        
+        key = credentials['key']
         secret = credentials['secret']
 
         # Initialize a Buda Auth client
@@ -258,7 +260,7 @@ class MyBot(Bot):
 
 Run the bot!
 
-    $ python bots.py run MyBot
+    python bots.py run MyBot
 
     TRADING BOTS 🤖
     ===============
@@ -277,7 +279,7 @@ Run the bot!
 
 Or put it to work in a loop!
 
-    $ python bots.py loop MyBot --interval 10
+    python bots.py loop MyBot --interval 10
 
     TRADING BOTS 🤖
     ===============
@@ -300,7 +302,6 @@ Or put it to work in a loop!
     Run time: 1.3632 seconds
     Ending MyBot 1530692735: 2018-07-04 08:25:32
 
-
 ## Bots CLI
 
 Trading-Bots comes with a handy `CLI` named... `bots-admin`!
@@ -309,7 +310,7 @@ Trading-Bots comes with a handy `CLI` named... `bots-admin`!
 
 #### Start a project
 
-    $ python bots.py startproject
+    python bots.py startproject
 
 ```bash
 TRADING BOTS 🤖
@@ -329,10 +330,9 @@ Success: 'MyProject' project was successfully created on '.'
     - secrets.yml
     - settings.yml
 
-
 #### Create a bot
 
-    $ python bots.py createbot
+    python bots.py createbot
 
 ```bash
 TRADING BOTS 🤖
@@ -352,7 +352,6 @@ Success: 'MyBot' bot was successfully created on 'my_project'
     - secrets.yml
     - settings.yml
 
-
 After creating or a new Bot, you must add it to `installed_bots` on `settings.yml`:
 
 ```yaml
@@ -362,10 +361,9 @@ installed_bots:
   - trading_bots.mybot.bot.MyBot  
 ```
 
-
 #### Run bot once
 
-    $ python bots.py run BOT [OPTIONS]
+    python bots.py run BOT [OPTIONS]
 
 Run a specified `BOT` by label. Options:
 
@@ -375,9 +373,8 @@ Run a specified `BOT` by label. Options:
 | `-l, --log`    | Log to this file |
 | `--settings`   | Global settings files (YAML format) |
 
-
 ```bash
-$ python bots.py run Example
+python bots.py run Example
 
 TRADING BOTS 🤖
 ===============
@@ -399,7 +396,7 @@ Ending Example 1530691595: 2018-07-04 08:06:40
 
 #### Run bot in a loop
 
-    $ python bots.py loop BOT [OPTIONS]
+    python bots.py loop BOT [OPTIONS]
 
 Schedule a `BOT` (by label) to run on an interval. Options:
 
@@ -411,7 +408,7 @@ Schedule a `BOT` (by label) to run on an interval. Options:
 | `--settings`     | Global settings files (YAML format) |
 
 ```bash
-$ python bots.py loop Example -i 5
+python bots.py loop Example -i 5
 
 TRADING BOTS 🤖
 ===============

@@ -123,16 +123,19 @@ def _algorithm(self):
 ```
 
 **Prepare order prices:**
+
 - First, we get the `market ticker` from Buda.com's API.
 - We offset our `mid price` using our `multipliers` from configs and save them as `price_buy` and `price_sell`.
 
 **Prepare order amounts:**
+
 - Cancel all pending orders at the selected market on Buda.com. This frees balance to use on our orders.
 - Get available balance amounts from Buda.com's API.
 - Validates against max allowed amount from our configs `max_base` and `max_quote`.
 - Sets the amounts to be used on orders as `amount_buy` and `amount_sell`.
 
 **Place orders:**
+
 - Checks order amounts against minimum allowed by Buda.com.
 - Places our orders at the exchange (You can test with `dry_run: True` flag on global settings to be safe).
 

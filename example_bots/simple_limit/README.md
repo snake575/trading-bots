@@ -9,23 +9,26 @@ Buying and selling at market price on illiquid markets can be hard on the execut
 Simple Limit is an easy way to use of buy and sell limit orders. It allows us to auto renew our orders using a reference market and a simple price multiplier to set an offset for our orders.
 The reference market should be active enough to take its price as a good reference and place our limit orders at a higher or lower price.
 
-
 ## Installation
 
 Clone or download this repository to your working environment
+
 ```bash
-$ git clone https://github.com/budacom/buda-bots.git
+git clone https://github.com/budacom/buda-bots.git
 ```
 
 Install dependencies using pipenv (or pip, of course)
+
 ```bash
-$ pipenv install
+pipenv install
 ```
 
 Then, activate the virtual enviroment:
+
 ```bash
-$ pipenv shell
+pipenv shell
 ```
+
 We are ready!
 
 ## Authentication
@@ -39,7 +42,6 @@ Copy the file `secrets.yml.example` and rename it to `secrets.yml`. Then fill wi
 - This library will create live orders at Buda.com cryptocurrency exchange. Please review the code and check all the parameters of your strategy before entering your keys and running the bot.
 - This example bot requires a currency converter, by default Open Exchange Rates is needed Register and get you api key for free [here](https://openexchangerates.org/signup/free).
 
-
 ## Usage
 
 For more references, go to the [official documentation](https://github.com/budacom/trading-bots/blob/master/README.md).
@@ -49,6 +51,7 @@ For more references, go to the [official documentation](https://github.com/budac
 Found at `example_bots/simple_limit/configs` folder. Its a yaml file that allows us to easily set parameters.
 
 **Example:**
+
 ```yml
 market: BTCCLP              # Buda.com market where orders will be placed
 reference:
@@ -63,8 +66,6 @@ amounts:
 ```
 
 ## Bot Strategy
-
-
 
 ### Setup
 
@@ -143,19 +144,21 @@ def _get_reference_prices(self):
     return ref_bid, ref_ask
 ```
 
-
 **Prepare prices**
+
 - First, we fetch the price `ticker` from our reference `exchange` and `market`.
 - Our reference price gets converted to our market's quote currency and is saved as `ref_bid` and `ref_ask`.
 - We offset our reference prices using our `multipliers` from configs and save them as `price_buy` and `price_sell`.
 
 **Prepare order amounts:**
+
 - Cancel all pending orders at the selected market on Buda.com. This frees balance to use on our orders.
 - Get available balance amounts from Buda.com's API.
 - Validates against max allowed amount from our configs `max_base` and `max_quote`.
 - Sets the amounts to be used on orders as `amount_buy` and `amount_sell`.
 
 **Place orders:**
+
 - Checks order amounts against minimum allowed by Buda.com.
 - Places our orders at the exchange (You can test with `dry_run: True` flag on global settings to be safe).
 
@@ -174,36 +177,42 @@ def _abort(self):
     else:
         self.log.info(f'All open orders were cancelled')
 ```
+
 - Basic abort function, we want to cancel all pending orders and exit.
 
 ## Running bots
 
 Test by running the desired bot once from console:
+
 ```bash
-$ python bots.py run SimpleLimit
+python bots.py run SimpleLimit
 ```
 
 Flag `--config` can be specified to change the default config file:
+
 ```bash
-$ python bots.py run SimpleLimit --config /path/to/simple-limit_other.yml
+python bots.py run SimpleLimit --config /path/to/simple-limit_other.yml
 ```
 
 Now, we need this to run on a loop, we should use `loop` option indicating `--interval` as seconds:
+
 ```bash
-$ python bots.py loop SimpleLimit --interval 300
+python bots.py loop SimpleLimit --interval 300
 ```
 
 Running multiple bots for different markets is possible using multiple shells and config files:
 
 Shell 1:
+
 ```bash
-$ python bots.py loop SimpleLimit --interval 300 --config simple-limit_btcclp.yml
-```
-Shell 2:
-```bash
-$ python bots.py loop SimpleLimit --interval 300 --config simple-limit_ethclp.yml
+python bots.py loop SimpleLimit --interval 300 --config simple-limit_btcclp.yml
 ```
 
+Shell 2:
+
+```bash
+python bots.py loop SimpleLimit --interval 300 --config simple-limit_ethclp.yml
+```
 
 ## Contributing
 
