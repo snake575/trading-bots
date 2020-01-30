@@ -14,7 +14,7 @@ The reference market should be active enough to take its price as a good referen
 Clone or download this repository to your working environment
 
 ```bash
-git clone https://github.com/budacom/buda-bots.git
+git clone https://github.com/snake575/trading-bots.git
 ```
 
 Install dependencies using pipenv (or pip, of course)
@@ -44,7 +44,7 @@ Copy the file `secrets.yml.example` and rename it to `secrets.yml`. Then fill wi
 
 ## Usage
 
-For more references, go to the [official documentation](https://github.com/budacom/trading-bots/blob/master/README.md).
+For more references, go to the [official documentation](https://github.com/snake575/trading-bots/blob/master/README.md).
 
 ### Setup Config File
 
