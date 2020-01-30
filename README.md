@@ -1,11 +1,7 @@
-[![Buda](https://api.buda.com/images/logo-dark.svg)](https://www.buda.com)
-
 # Trading Bots 🤖
 
 > A simple framework for bootstrapping your **Crypto Trading Bots** on Python 3.6+
-> 
-> Supported by [Buda.com](https://www.buda.com)
-> 
+>
 > **Disclaimer:** Still at an early stage of development. Rapidly evolving APIs.
 
 [![PyPI - License](https://img.shields.io/pypi/l/trading-bots.svg)](https://opensource.org/licenses/MIT)

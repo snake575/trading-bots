@@ -1,6 +1,6 @@
 # Trading Bots - Any to Any example
 
-Example use case of Buda.com Bots framework for creating and running cryptocurrency trading bots.
+Example use case of Bots framework for creating and running cryptocurrency trading bots.
 
 ## Overview
 

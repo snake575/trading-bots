@@ -1,32 +1,34 @@
 # Trading Bots - Technical Analysis example
 
-Example use case of Buda.com Bots framework for creating and running cryptocurrency trading bots.
+Example use case of Bots framework for creating and running cryptocurrency trading bots.
 
 ## Overview
 
 Technical analysis uses historical trading data to identify and forecast price trends and patterns which can be exploited with different trading techniques.
 
-Cryptocurrency exchanges share live and publicly all the data needed for this kind of analysis. 
+Cryptocurrency exchanges share live and publicly all the data needed for this kind of analysis.
 This example shows us how to fetch this data from the markets, build candles from trades using Pandas and easily calculate any indicator using the popular TA-lib.
 
 The algorithm presented as example makes use of Bollinger Bands and Relative Strength Index. We want to identify strong price movements where the market might be oversold or overbought (overreaction or panic selling) making a trade betting for the conditions to return to normal and taking a profit from the price correction.
 
-
 ## Installation
 
 Clone or download this repository to your working environment
+
 ```bash
-$ git clone https://github.com/budacom/buda-bots.git
+git clone https://github.com/budacom/buda-bots.git
 ```
 
 Install dependencies using pipenv (or pip, of course)
+
 ```bash
-$ pipenv install
+pipenv install
 ```
 
 Then, activate the virtual enviroment:
+
 ```bash
-$ pipenv shell
+pipenv shell
 ```
 
 #### **Aditional Dependencies**
@@ -34,8 +36,9 @@ $ pipenv shell
 ##### - Pandas
 
 Pandas is a powerful open source data analysis tool that allows us to easily work with our data arrays. Its available on PyPI:
+
 ```bash
-$ pipenv install pandas
+pipenv install pandas
 ```
 
 ##### - TA-Lib
