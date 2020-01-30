@@ -8,7 +8,6 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/trading-bots.svg)
 [![PyPI](https://img.shields.io/pypi/v/trading-bots.svg)](https://pypi.org/project/trading-bots/)
 ![PyPI - Status](https://img.shields.io/pypi/status/trading-bots.svg)
-[![Updates](https://pyup.io/repos/github/budacom/trading-bots/shield.svg)](https://pyup.io/repos/budacom/delta575/trading-bots/)
 
 **Trading-Bots** is a general purpose *mini-framework* for developing an [algorithmic trading bot](https://en.wikipedia.org/wiki/Algorithmic_trading) on **crypto currencies**, thus it makes no assumption of your trading goals.
 
