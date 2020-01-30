@@ -3,14 +3,11 @@ from decimal import Decimal
 from typing import Dict, Union
 
 from trading_bots.core.logging import get_logger
+
 from ..clients import ClientWrapper
 from ..money import Money
 
-__all__ = [
-    'ConverterRateError',
-    'ConverterValidationError',
-    'Converter'
-]
+__all__ = ["ConverterRateError", "ConverterValidationError", "Converter"]
 
 logger = get_logger(__name__)
 Number = Union[float, Decimal]
@@ -18,17 +15,18 @@ Number = Union[float, Decimal]
 
 class ConverterRateError(Exception):
     def __init__(self, converter):
-        super().__init__(f'{converter} failed to get rate!')
+        super().__init__(f"{converter} failed to get rate!")
 
 
 class ConverterValidationError(Exception):
     def __init__(self, converter, rate):
-        super().__init__(f'{converter} rate is invalid!: {rate}')
+        super().__init__(f"{converter} rate is invalid!: {rate}")
 
 
 class Converter(ClientWrapper, abc.ABC):
-
-    def __init__(self, return_decimal: bool=False, client_params: Dict=None, name: str=None):
+    def __init__(
+        self, return_decimal: bool = False, client_params: Dict = None, name: str = None
+    ):
         super().__init__(client_params, name)
         self.return_decimal = return_decimal
 
@@ -42,12 +40,12 @@ class Converter(ClientWrapper, abc.ABC):
     def _get_rate(self, currency: str, to: str) -> Union[str, Number]:
         pass
 
-    def get_rate_for(self, currency: str, to: str, reverse: bool=False) -> Number:
+    def get_rate_for(self, currency: str, to: str, reverse: bool = False) -> Number:
         """Get current market rate for currency"""
 
         # Return 1 when currencies match
         if currency.upper() == to.upper():
-            return self._format_number('1.0')
+            return self._format_number("1.0")
 
         # Set base and quote currencies
         base, quote = currency, to
@@ -70,17 +68,19 @@ class Converter(ClientWrapper, abc.ABC):
 
         # Return market rate
         if reverse:
-            return self._format_number('1.0') / rate
+            return self._format_number("1.0") / rate
         return rate
 
-    def convert(self, amount: Number, currency: str, to: str, reverse: bool=False) -> Number:
+    def convert(
+        self, amount: Number, currency: str, to: str, reverse: bool = False
+    ) -> Number:
         """Convert amount to another currency"""
         rate = self.get_rate_for(currency, to, reverse)
         if self.return_decimal:
             amount = Decimal(amount)
         return amount * rate
 
-    def convert_money(self, money: Money, to: str, reverse: bool=False) -> Money:
+    def convert_money(self, money: Money, to: str, reverse: bool = False) -> Money:
         """Convert money to another currency"""
         converted = self.convert(money.amount, money.currency, to, reverse)
         return Money(converted, to)

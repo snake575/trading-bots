@@ -5,7 +5,7 @@ from ..clients import *
 from ..models import *
 
 __all__ = [
-    'Exchange',
+    "Exchange",
 ]
 
 
@@ -15,16 +15,22 @@ class Exchange(BaseClient, abc.ABC):
     trading_client: Type[TradingClient] = None
 
     def __repr__(self):
-        return f'Exchange({self.name})'
+        return f"Exchange({self.name})"
 
     def __str__(self):
         return self.name
 
     def Market(self, market: Union[str, Market]) -> MarketClient:
-        return self.market_client(market, self.client_params, self.dry_run, self.log, self.store, self.name)
+        return self.market_client(
+            market, self.client_params, self.dry_run, self.log, self.store, self.name
+        )
 
     def Wallet(self, currency: str) -> WalletClient:
-        return self.wallet_client(currency, self.client_params, self.dry_run, self.log, self.store, self.name)
+        return self.wallet_client(
+            currency, self.client_params, self.dry_run, self.log, self.store, self.name
+        )
 
     def Trading(self, market: Union[str, Market]) -> TradingClient:
-        return self.trading_client(market, self.client_params, self.dry_run, self.log, self.store, self.name)
+        return self.trading_client(
+            market, self.client_params, self.dry_run, self.log, self.store, self.name
+        )

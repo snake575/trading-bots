@@ -11,34 +11,33 @@ from .errors import *
 from .money import Money
 
 __all__ = [
-    'Number',
-    'Money',
-    'Market',
-    'Side',
-    'OrderType',
-    'OrderStatus',
-    'TxType',
-    'TxStatus',
-    'Fee',
-    'TradingFees',
-    'Ticker',
-    'Balance',
-    'Trade',
-    'Order',
-    'OrderBookEntry',
-    'OrderBook',
-    'OrderBookSide',
-    'Quotation',
-    'Transaction',
-    'Withdrawal',
-    'Deposit',
+    "Number",
+    "Money",
+    "Market",
+    "Side",
+    "OrderType",
+    "OrderStatus",
+    "TxType",
+    "TxStatus",
+    "Fee",
+    "TradingFees",
+    "Ticker",
+    "Balance",
+    "Trade",
+    "Order",
+    "OrderBookEntry",
+    "OrderBook",
+    "OrderBookSide",
+    "Quotation",
+    "Transaction",
+    "Withdrawal",
+    "Deposit",
 ]
 
 Number = Union[int, Decimal, Money]
 
 
 class Market:
-
     def __init__(self, base: str, quote: str):
         self._base = str(base)
         self._quote = str(quote)
@@ -57,7 +56,9 @@ class Market:
 
     @classmethod
     def from_code(cls, code: str):
-        assert len(code) == 6, 'A market code must have 6 characters (base and quote currency).'
+        assert (
+            len(code) == 6
+        ), "A market code must have 6 characters (base and quote currency)."
         base, quote = code[:3], code[3:]
         return cls(base, quote)
 
@@ -70,32 +71,32 @@ class Market:
     def __str__(self) -> str:
         return str(self.code)
 
-    def __lt__(self, other: (str, 'Market')) -> bool:
+    def __lt__(self, other: (str, "Market")) -> bool:
         if isinstance(other, Market):
             other = other.code
         return self.code < other
 
-    def __lte__(self, other: (str, 'Market')) -> bool:
+    def __lte__(self, other: (str, "Market")) -> bool:
         if isinstance(other, Market):
             other = other.code
         return self.code <= other
 
-    def __gt__(self, other: (str, 'Market')) -> bool:
+    def __gt__(self, other: (str, "Market")) -> bool:
         if isinstance(other, Market):
             other = other.code
         return self.code > other
 
-    def __gte__(self, other: (str, 'Market')) -> bool:
+    def __gte__(self, other: (str, "Market")) -> bool:
         if isinstance(other, Market):
             other = other.code
         return self.code >= other
 
-    def __eq__(self, other: (str, 'Market')) -> bool:
+    def __eq__(self, other: (str, "Market")) -> bool:
         if isinstance(other, Market):
             other = other.code
         return self.code == other
 
-    def __ne__(self, other: (str, 'Market')) -> bool:
+    def __ne__(self, other: (str, "Market")) -> bool:
         if isinstance(other, Market):
             other = other.code
         return not self.code == other
@@ -105,8 +106,8 @@ class Market:
 
 
 class Side(Enum):
-    BUY = 'buy'
-    SELL = 'sell'
+    BUY = "buy"
+    SELL = "sell"
 
     def __repr__(self):
         return self.name
@@ -114,12 +115,12 @@ class Side(Enum):
     @property
     def type(self) -> str:
         if self == Side.BUY:
-            return 'bid'
+            return "bid"
         else:
-            return 'ask'
+            return "ask"
 
     @property
-    def reverse(self) -> 'Side':
+    def reverse(self) -> "Side":
         if self == Side.BUY:
             return Side.SELL
         else:
@@ -127,35 +128,35 @@ class Side(Enum):
 
 
 class OrderType(Enum):
-    MARKET = 'market'
-    LIMIT = 'limit'
+    MARKET = "market"
+    LIMIT = "limit"
 
     def __repr__(self):
         return self.name
 
 
 class OrderStatus(Enum):
-    OPEN = 'open'
-    CLOSED = 'closed'
-    CANCELED = 'canceled'
+    OPEN = "open"
+    CLOSED = "closed"
+    CANCELED = "canceled"
 
     def __repr__(self):
         return self.name
 
 
 class TxType(Enum):
-    DEPOSIT = 'deposit'
-    WITHDRAWAL = 'withdrawal'
+    DEPOSIT = "deposit"
+    WITHDRAWAL = "withdrawal"
 
     def __repr__(self):
         return self.name
 
 
 class TxStatus(Enum):
-    OK = 'ok'
-    FAILED = 'failed'
-    CANCELED = 'canceled'
-    PENDING = 'pending'
+    OK = "ok"
+    FAILED = "failed"
+    CANCELED = "canceled"
+    PENDING = "pending"
 
     def __repr__(self):
         return self.name
@@ -232,7 +233,13 @@ class Trade(Timestamped):
     iso8601: str = field(default=None, init=False)
 
     @classmethod
-    def create_default(cls, market: Market, amount: Decimal, price: Decimal=None, timestamp: int=None) -> 'Trade':
+    def create_default(
+        cls,
+        market: Market,
+        amount: Decimal,
+        price: Decimal = None,
+        timestamp: int = None,
+    ) -> "Trade":
         return cls(
             id=None,
             market=market,
@@ -266,8 +273,15 @@ class Order(Timestamped):
     iso8601: str = field(default=None, init=False)
 
     @classmethod
-    def create_default(cls, market: Market, order_type: OrderType, side: Side,
-                       amount: Decimal, price: Decimal=None, timestamp: int=None) -> 'Order':
+    def create_default(
+        cls,
+        market: Market,
+        order_type: OrderType,
+        side: Side,
+        amount: Decimal,
+        price: Decimal = None,
+        timestamp: int = None,
+    ) -> "Order":
         return cls(
             id=None,
             market=market,
@@ -308,17 +322,27 @@ class Quotation:
     def __post_init__(self):
         fee_scalar = Decimal(1) - (self.fee or Decimal(0))
         if self.amount.currency == self.market.base:
-            self.amount_other = sum(Money(o.amount.amount * o.price.amount, self.market.quote)
-                                    for o in self.orders) * fee_scalar
+            self.amount_other = (
+                sum(
+                    Money(o.amount.amount * o.price.amount, self.market.quote)
+                    for o in self.orders
+                )
+                * fee_scalar
+            )
             self.base_amount, self.quote_amount = self.amount, self.amount_other
         else:
-            self.amount_other = sum(Money(o.amount.amount / o.price.amount, self.market.base)
-                                    for o in self.orders) * fee_scalar
+            self.amount_other = (
+                sum(
+                    Money(o.amount.amount / o.price.amount, self.market.base)
+                    for o in self.orders
+                )
+                * fee_scalar
+            )
             self.base_amount, self.quote_amount = self.amount_other, self.amount
         self.average_price = self.quote_amount / self.base_amount.amount
 
     def __str__(self):
-        return f'{self.side} {self.base_amount} for {self.quote_amount} @{self.average_price}'
+        return f"{self.side} {self.base_amount} for {self.quote_amount} @{self.average_price}"
 
 
 @dataclass
@@ -333,12 +357,18 @@ class OrderBook(Timestamped):
 
     def __repr__(self):
         name = self.__class__.__qualname__
-        return f'{name}(' + ', '.join([
-            f'market={self.market}',
-            f'bids={len(self.bids)}',
-            f'asks={len(self.asks)}',
-            f'iso8601={self.iso8601}',
-        ]) + ')'
+        return (
+            f"{name}("
+            + ", ".join(
+                [
+                    f"market={self.market}",
+                    f"bids={len(self.bids)}",
+                    f"asks={len(self.asks)}",
+                    f"iso8601={self.iso8601}",
+                ]
+            )
+            + ")"
+        )
 
     def get_book_side(self, side: Side) -> OrderBookSide:
         return self.bids if side == Side.BUY else self.asks
@@ -368,31 +398,35 @@ class OrderBook(Timestamped):
         return volume_total, volume_bid, volume_ask
 
     # Quote ------------------------------------------------------------------
-    def quote(self, side: Side, amount: Money=None, fee: Decimal=None) -> Quotation:
+    def quote(self, side: Side, amount: Money = None, fee: Decimal = None) -> Quotation:
         """Get a quotation for the order book given a side, amount and fee (amount can be base or quote)."""
         orders = self._quote_book_orders(side, amount)
         return Quotation(side, self.market, orders, amount, fee)
 
-    def quote_buy(self, amount: Money=None, fee: Decimal=None) -> Quotation:
+    def quote_buy(self, amount: Money = None, fee: Decimal = None) -> Quotation:
         """Get a buy quotation for the order book given an amount and fee (amount can be base or quote)."""
         return self.quote(Side.BUY, amount, fee)
 
-    def quote_sell(self, amount: Money=None, fee: Decimal=None) -> Quotation:
+    def quote_sell(self, amount: Money = None, fee: Decimal = None) -> Quotation:
         """Get a sell quotation for the order book given an amount and fee (amount can be base or quote)."""
         return self.quote(Side.SELL, amount, fee)
 
-    def _quote_book_orders(self, side: Side, amount: Money=None) -> List[OrderBookEntry]:
+    def _quote_book_orders(
+        self, side: Side, amount: Money = None
+    ) -> List[OrderBookEntry]:
         # Flip sides, for a buy quotation we need to quote the sell book (asks)
         side = side.reverse
         orders: List[OrderBookEntry] = []
         order_book_side = self.get_book_side(side)
 
         if not order_book_side:
-            raise OrderBookEmpty(f'{side.value.title()} order book is empty!')
+            raise OrderBookEmpty(f"{side.value.title()} order book is empty!")
         if amount is None:
             amount = Money(0, self.market.base)
         if amount.currency not in self.market.code:
-            raise ValueError(f"The amount currency {amount.currency} must be in {self.market}")
+            raise ValueError(
+                f"The amount currency {amount.currency} must be in {self.market}"
+            )
 
         def get_order_amount(order_: OrderBookEntry) -> Money:
             if amount.currency == self.market.quote:
@@ -406,31 +440,33 @@ class OrderBook(Timestamped):
             if not amount:
                 break
         if amount:
-            raise QuotationError(f'Total amount on {side} order book is not enough to cover quote')
+            raise QuotationError(
+                f"Total amount on {side} order book is not enough to cover quote"
+            )
         return orders
 
     # Spread -----------------------------------------------------------------
-    def quote_price(self, side: Side, amount: Money=None) -> Money:
+    def quote_price(self, side: Side, amount: Money = None) -> Money:
         """Quote price for an amount from a side of the order book."""
         orders = self._quote_book_orders(side, amount)
         return orders[-1].price
 
-    def quote_bid_price(self, amount: Money=None) -> Money:
+    def quote_bid_price(self, amount: Money = None) -> Money:
         """Quote a sell price for an amount from the order book."""
         return self.quote_price(Side.SELL, amount)
 
-    def quote_ask_price(self, amount: Money=None) -> Money:
+    def quote_ask_price(self, amount: Money = None) -> Money:
         """Quote a buy price for an amount from the order book."""
         return self.quote_price(Side.BUY, amount)
 
-    def quote_spread_details(self, amount: Money=None) -> Tuple[Money, Money, Money]:
+    def quote_spread_details(self, amount: Money = None) -> Tuple[Money, Money, Money]:
         """Quote spread details (bid, ask, spread) for an amount from the order book."""
         bid = self.quote_bid_price(amount)
         ask = self.quote_ask_price(amount)
         spread = ask - bid
         return bid, ask, spread
 
-    def quote_spread(self, amount: Money=None) -> Money:
+    def quote_spread(self, amount: Money = None) -> Money:
         """Quote the spread for an amount from the order book."""
         bid, ask, spread = self.quote_spread_details(amount)
         return spread
@@ -484,8 +520,14 @@ class Transaction(Timestamped):
     iso8601: str = field(default=None, init=False)
 
     @classmethod
-    def create_default(cls, tx_type: TxType, currency: str, amount: Decimal, address: str,
-                       timestamp=timestamp) -> 'Transaction':
+    def create_default(
+        cls,
+        tx_type: TxType,
+        currency: str,
+        amount: Decimal,
+        address: str,
+        timestamp=timestamp,
+    ) -> "Transaction":
         return cls(
             id=None,
             type=tx_type,

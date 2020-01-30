@@ -8,12 +8,12 @@ from pygogo.utils import get_structured_filter
 from ..conf import settings
 
 config: Dict = settings.logging
-bots_root: str = config['bots_root']
-log_level: str = config['level']
-file: str = settings.logging.get('file')
+bots_root: str = config["bots_root"]
+log_level: str = config["level"]
+file: str = settings.logging.get("file")
 
 # Configure logger
-console_format = '%(asctime)s UTC | %(tag)s | %(env)-4s | %(bot)s | %(config)s | %(levelname)-8s | %(message)s'
+console_format = "%(asctime)s UTC | %(tag)s | %(env)-4s | %(bot)s | %(config)s | %(levelname)-8s | %(message)s"
 console_formatter = logging.Formatter(console_format)
 
 if file:
@@ -22,11 +22,11 @@ else:
     low_level_handler = pygogo.handlers.stdout_hdlr()
 
 gogo = pygogo.Gogo(
-    name=config['bots_root'],
+    name=config["bots_root"],
     low_formatter=console_formatter,
     high_formatter=console_formatter,
-    low_level=log_level['low'],
-    high_level=log_level['high'],
+    low_level=log_level["low"],
+    high_level=log_level["high"],
     low_hdlr=low_level_handler,
     high_hdlr=pygogo.handlers.stderr_hdlr(),
     monolog=True,
@@ -35,7 +35,7 @@ gogo = pygogo.Gogo(
 
 def setup_logger(logger: Logger, **logger_kwargs) -> Logger:
     if not logger.handlers:
-        logger_name = logger.name.partition('.')[2]
+        logger_name = logger.name.partition(".")[2]
         logger = gogo.get_logger(logger_name)
     structured_filter = get_structured_filter(**logger_kwargs)
     for handler in logger.handlers:
@@ -45,5 +45,5 @@ def setup_logger(logger: Logger, **logger_kwargs) -> Logger:
 
 
 def get_logger(logger_name: str) -> Logger:
-    logger = logging.getLogger(f'{bots_root}.{logger_name}')
+    logger = logging.getLogger(f"{bots_root}.{logger_name}")
     return logger

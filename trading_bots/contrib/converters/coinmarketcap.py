@@ -3,13 +3,11 @@ from cached_property import cached_property
 
 from .base import Converter
 
-__all__ = [
-    'CoinMarketCap'
-]
+__all__ = ["CoinMarketCap"]
 
 
 class CoinMarketCap(Converter):
-    name = 'CoinMarketCap'
+    name = "CoinMarketCap"
 
     @cached_property
     def client(self) -> api.CoinMarketCap:

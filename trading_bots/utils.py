@@ -9,22 +9,22 @@ from trading_bots.contrib.money import Money
 
 DECIMALS = {
     # Fiat
-    'ARS': 2,
-    'BRL': 2,
-    'CLP': 2,
-    'COP': 2,
-    'EUR': 2,
-    'PEN': 2,
-    'USD': 2,
+    "ARS": 2,
+    "BRL": 2,
+    "CLP": 2,
+    "COP": 2,
+    "EUR": 2,
+    "PEN": 2,
+    "USD": 2,
     # Crypto
-    'BCH': 8,
-    'BTC': 8,
-    'ETH': 8,
-    'LTC': 8,
+    "BCH": 8,
+    "BTC": 8,
+    "ETH": 8,
+    "LTC": 8,
 }
 
 
-def get_iso_time_str(timestamp: Union[int, float, str, datetime]=None) -> str:
+def get_iso_time_str(timestamp: Union[int, float, str, datetime] = None) -> str:
     """Get the ISO time string from a timestamp or date obj. Returns current time str if no timestamp is passed"""
     if isinstance(timestamp, (int, float)):
         maya_dt = maya.MayaDT(timestamp)
@@ -33,7 +33,7 @@ def get_iso_time_str(timestamp: Union[int, float, str, datetime]=None) -> str:
     elif timestamp is None:
         maya_dt = maya.now()
     else:
-        raise ValueError(f'`{type(timestamp)}` is not supported')
+        raise ValueError(f"`{type(timestamp)}` is not supported")
     return maya_dt.iso8601()
 
 
@@ -69,10 +69,12 @@ def spread_money(money: Money, spread_p: Decimal) -> Tuple[Money, Money]:
 
 def validate(name: str, value: Any, condition: bool) -> None:
     """Validates value on condition"""
-    assert condition, f'{name} is invalid! ({name}: {value})'
+    assert condition, f"{name} is invalid! ({name}: {value})"
 
 
-def validate_age(name: str, tolerance: float, from_timestamp: float, to_timestamp: float) -> None:
+def validate_age(
+    name: str, tolerance: float, from_timestamp: float, to_timestamp: float
+) -> None:
     """Check if age is valid (within tolerance)"""
     age = to_timestamp - from_timestamp
-    assert age <= tolerance, f'{name} is too old! (Age: {age} > Tolerance: {tolerance})'
+    assert age <= tolerance, f"{name} is too old! (Age: {age} > Tolerance: {tolerance})"

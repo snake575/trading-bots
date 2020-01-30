@@ -4,5 +4,5 @@ Example: python -m trading_bots --help
 """
 from trading_bots.core import management
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     management.cli()
