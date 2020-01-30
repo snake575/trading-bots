@@ -293,7 +293,7 @@ class Order(Timestamped):
             filled=None,
             cost=None,
             fee=None,
-            price=price,
+            price=Money(price, market.quote),
             info=None,
             timestamp=timestamp,
         )
