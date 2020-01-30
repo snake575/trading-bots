@@ -17,16 +17,16 @@ Clone or download this repository to your working environment
 git clone https://github.com/snake575/trading-bots.git
 ```
 
-Install dependencies using pipenv (or pip, of course)
+Install dependencies using poetry (or pip, of course)
 
 ```bash
-pipenv install
+poetry install
 ```
 
 Then, activate the virtual enviroment:
 
 ```bash
-pipenv shell
+poetry shell
 ```
 
 We are ready!

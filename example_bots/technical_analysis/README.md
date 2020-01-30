@@ -19,16 +19,16 @@ Clone or download this repository to your working environment
 git clone https://github.com/snake575/trading-bots.git
 ```
 
-Install dependencies using pipenv (or pip, of course)
+Install dependencies using poetry (or pip, of course)
 
 ```bash
-pipenv install
+poetry install
 ```
 
 Then, activate the virtual enviroment:
 
 ```bash
-pipenv shell
+poetry shell
 ```
 
 #### **Aditional Dependencies**
@@ -38,7 +38,7 @@ pipenv shell
 Pandas is a powerful open source data analysis tool that allows us to easily work with our data arrays. Its available on PyPI:
 
 ```bash
-pipenv install pandas
+poetry add pandas
 ```
 
 ##### - TA-Lib
@@ -55,7 +55,7 @@ Just download and move the file to your project folder and install, eg: (for pyt
 
 ```bash
 mv /path/to/TA_Lib‑0.4.17‑cp37‑cp37m‑win_amd64.whl /path/to/trading-bots
-pipenv install --skip-lock TA_Lib‑0.4.17‑cp37‑cp37m‑win_amd64.whl
+poetry add TA_Lib‑0.4.17‑cp37‑cp37m‑win_amd64.whl
 ```
 
 We are ready!

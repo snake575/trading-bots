@@ -18,13 +18,13 @@
 * macOS, Windows or Linux
 * Python 3.6 or 3.7
 
-To install Trading-Bots, simply use `pipenv` (or `pip`, of course):
+To install Trading-Bots, simply use `poetry` (or `pip`, of course):
 
-    pipenv install trading-bots
+    poetry add trading-bots
 
 Remember to activate the virtual environment
 
-    pipenv shell
+    poetry shell
 
 ## Getting started
 
