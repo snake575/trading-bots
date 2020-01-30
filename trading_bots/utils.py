@@ -50,7 +50,7 @@ def truncate(value: Decimal, n_digits: int) -> Decimal:
 
 def truncate_to(value: Decimal, currency: str) -> Decimal:
     """Truncates a value to the number of decimals corresponding to the currency"""
-    decimal_places = DECIMALS.get(currency.upper(), 2)
+    decimal_places = DECIMALS.get(currency.upper(), 8)
     return truncate(value, decimal_places)
 
 
