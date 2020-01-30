@@ -302,9 +302,12 @@ class BitfinexTrading(TradingClient, BitfinexMarketBase, BitfinexAuth):
     #  https://docs.bitfinex.com/v1/reference#rest-public-symbol-details
     min_order_amount_mapping = {
         "BCH": Decimal("0.02"),
-        "BTC": Decimal("0.002"),
+        "BTC": Decimal("0.0008"),
+        "DAI": Decimal("6.0"),
         "ETH": Decimal("0.04"),
-        "LTC": Decimal("0.02"),
+        "LTC": Decimal("0.2"),
+        "UST": Decimal("6.0"),
+        "UDC": Decimal("6.0"),
     }
     order_type_mapping = {
         OrderType.MARKET: "exchange market",
