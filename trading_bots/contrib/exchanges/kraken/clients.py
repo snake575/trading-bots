@@ -56,8 +56,8 @@ class KrakenBase(BaseClient, ABC):
 
     def _get_market_from_pair(self, pair):
         for market in self.markets:
-            base = self._parse_common_currency(market.base, reverted=True)
-            quote = self._parse_common_currency(market.quote, reverted=True)
+            base = self._parse_common_currency(market.base, reverse=True)
+            quote = self._parse_common_currency(market.quote, reverse=True)
             m = base + quote
             if m == pair:
                 return market
@@ -148,7 +148,7 @@ class KrakenWallet(WalletClient, KrakenAuth):
             "Kraken only returns total balance, fetching open orders to calculate free balance"
         )
         balance = self.client.balance()
-        asset = self._parse_common_currency(self.currency, reverted=True)
+        asset = self._parse_common_currency(self.currency, reverse=True)
         if balance["result"].get(asset) is None:
             zero = Money(Decimal("0.0"), self.currency)
             return Balance(total=zero, free=zero, used=zero, info="balance not found")
@@ -204,7 +204,7 @@ class KrakenWallet(WalletClient, KrakenAuth):
     def _withdraw(
         self, amount: Decimal, address: str, subtract_fee: bool = False, **params
     ) -> Withdrawal:
-        asset = self._parse_common_currency(self.currency, reverted=True)
+        asset = self._parse_common_currency(self.currency, reverse=True)
         withdraw = self.client.withdraw(asset, amount, address, **params)["result"]
         return self._parse_transaction(withdraw, TxType.WITHDRAWAL)
 

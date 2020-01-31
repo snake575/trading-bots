@@ -51,8 +51,8 @@ class BitfinexBase(BaseClient, ABC):
 
     def _get_market_from_pair(self, pair):
         for market in self.markets:
-            base = self._parse_common_currency(market.base, reverted=True)
-            quote = self._parse_common_currency(market.quote, reverted=True)
+            base = self._parse_common_currency(market.base, reverse=True)
+            quote = self._parse_common_currency(market.quote, reverse=True)
             m = base + quote
             if m == pair:
                 return market
@@ -81,8 +81,8 @@ class BitfinexAuth(BitfinexBase):
 
 class BitfinexMarketBase(MarketClient, ABC):
     def _market_id(self) -> str:
-        base = self._parse_common_currency(self.market.base, reverted=True)
-        quote = self._parse_common_currency(self.market.quote, reverted=True)
+        base = self._parse_common_currency(self.market.base, reverse=True)
+        quote = self._parse_common_currency(self.market.quote, reverse=True)
         return base + quote
 
     @cached_property
@@ -213,7 +213,7 @@ class BitfinexWallet(WalletClient, BitfinexAuth):
             currency, client_params, dry_run, logger, store, name, **kwargs
         )
         self.wallet_type = wallet_type
-        self.asset = self._parse_common_currency(self.currency, reverted=True)
+        self.asset = self._parse_common_currency(self.currency, reverse=True)
 
     def _balance(self) -> Balance:
         balances = self.client.balances()

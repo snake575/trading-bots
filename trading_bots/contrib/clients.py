@@ -63,8 +63,8 @@ class BaseClient(ClientWrapper, abc.ABC):
 
     common_currencies = dict()
 
-    def _parse_common_currency(self, currency: str, reverted: bool = False) -> str:
-        if reverted:
+    def _parse_common_currency(self, currency: str, reverse: bool = False) -> str:
+        if reverse:
             mapping = {v: k for k, v in self.common_currencies.items()}
             return mapping.get(currency, currency)
         return self.common_currencies.get(currency, currency)
