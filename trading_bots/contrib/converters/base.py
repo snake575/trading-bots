@@ -34,6 +34,7 @@ class Converter(ClientWrapper, abc.ABC):
         if self.return_decimal:
             if not isinstance(value, Decimal):
                 return Decimal(value)
+            return value
         return float(value)
 
     @abc.abstractmethod
