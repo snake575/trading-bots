@@ -23,6 +23,12 @@ __all__ = [
 
 DEFAULT_WALLET_TYPE = "exchange"
 
+ASSET_MAPPING = {
+    "BCH": "BAB",
+    "USDC": "UDC",
+    "USDT": "UST",
+}
+
 
 class BitfinexBase(BaseClient, ABC):
     name: str = "Bitfinex"
@@ -53,6 +59,12 @@ class BitfinexAuth(BitfinexBase):
 
 
 class BitfinexMarketBase(MarketClient, ABC):
+
+    def _market_id(self) -> str:
+        base = ASSET_MAPPING.get(self.market.base, self.market.base)
+        quote = ASSET_MAPPING.get(self.market.quote, self.market.quote)
+        return base + quote
+
     @cached_property
     def market_id_v2(self) -> str:
         return "t" + self.market_id
@@ -181,8 +193,8 @@ class BitfinexWallet(WalletClient, BitfinexAuth):
 
     def _balance(self) -> Balance:
         balances = self.client.balances()
-        currency = self.currency.lower()
-        balance = [b for b in balances if b["currency"] == currency and b["type"] == self.wallet_type]
+        asset = ASSET_MAPPING.get(self.currency, self.currency)
+        balance = [b for b in balances if b["currency"] == asset.lower() and b["type"] == self.wallet_type]
         if len(balance) == 0:
             zero = Money(Decimal("0.0"), self.currency)
             return Balance(total=zero, free=zero, used=zero, info="balance not found")
@@ -196,6 +208,7 @@ class BitfinexWallet(WalletClient, BitfinexAuth):
             data = {}
             timestamp = None
             max_limit = 999
+            asset = ASSET_MAPPING.get(self.currency, self.currency)
             if limit:
                 if limit > max_limit:
                     raise ValueError(f"Cant return more than {max_limit}")
@@ -203,9 +216,7 @@ class BitfinexWallet(WalletClient, BitfinexAuth):
                     f"Bitfinex last {limit} {tx_type.value} for the last {max_limit} transactions"
                 )
             while True:
-                entries = self.client.movements(
-                    self.currency, until=timestamp, limit=max_limit
-                )
+                entries = self.client.movements(asset, until=timestamp, limit=max_limit)
                 data.update(
                     {
                         entry["id"]: entry
@@ -225,10 +236,9 @@ class BitfinexWallet(WalletClient, BitfinexAuth):
             data = {}
             timestamp = since
             max_limit = 999
+            asset = ASSET_MAPPING.get(self.currency, self.currency)
             while True:
-                entries = self.client.movements(
-                    self.currency, since=timestamp, limit=max_limit
-                )
+                entries = self.client.movements(asset, since=timestamp, limit=max_limit)
                 data.update(
                     {
                         entry["id"]: entry
@@ -306,8 +316,8 @@ class BitfinexTrading(TradingClient, BitfinexMarketBase, BitfinexAuth):
         "DAI": Decimal("6.0"),
         "ETH": Decimal("0.04"),
         "LTC": Decimal("0.2"),
-        "UST": Decimal("6.0"),
-        "UDC": Decimal("6.0"),
+        "USDC": Decimal("6.0"),
+        "USDT": Decimal("6.0"),
     }
     order_type_mapping = {
         OrderType.MARKET: "exchange market",
