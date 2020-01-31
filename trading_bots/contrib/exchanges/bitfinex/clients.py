@@ -182,11 +182,11 @@ class BitfinexWallet(WalletClient, BitfinexAuth):
     def _balance(self) -> Balance:
         balances = self.client.balances()
         currency = self.currency.lower()
-        balance = next(
-            b
-            for b in balances
-            if b["currency"] == currency and b["type"] == self.wallet_type
-        )
+        balance = [b for b in balances if b["currency"] == currency and b["type"] == self.wallet_type]
+        if len(balance) == 0:
+            zero = Money(Decimal("0.0"), self.currency)
+            return Balance(total=zero, free=zero, used=zero, info="balance not found")
+        balance = balance[0]
         free = Money(balance["available"], self.currency)
         total = Money(balance["amount"], self.currency)
         return Balance(total=total, free=free, used=total - free, info=balance,)
