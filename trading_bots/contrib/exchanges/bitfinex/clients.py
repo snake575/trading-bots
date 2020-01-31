@@ -204,7 +204,7 @@ class BitfinexWallet(WalletClient, BitfinexAuth):
             )
         except StopIteration:
             zero = Money(Decimal("0.0"), self.currency)
-            return Balance(total=zero, free=zero, used=zero)
+            return Balance(total=zero, free=zero, used=zero, info="balance not found")
         free = Money(balance["available"], self.currency)
         total = Money(balance["amount"], self.currency)
         return Balance(total=total, free=free, used=total - free, info=balance)
