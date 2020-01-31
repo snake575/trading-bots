@@ -169,10 +169,13 @@ class BitfinexWallet(WalletClient, BitfinexAuth):
         "LTC": Fee(base=Money("0.01", "LTC")),
     }
     method_mapping = {
-        "BCH": "bcash",
+        "BCH": "bab",
         "BTC": "bitcoin",
+        "DAI": "dai",
         "ETH": "ethereum",
         "LTC": "litecoin",
+        "USDC": "udc",
+        "USDT": "tetheruso",
     }
 
     def __init__(
