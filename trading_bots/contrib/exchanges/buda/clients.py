@@ -193,7 +193,7 @@ class BudaWallet(WalletClient, BudaAuth):
         balance = self.client.balance(self.currency)
         total = Money(*balance.json["amount"])
         free = Money(*balance.json["available_amount"])
-        return Balance(total=total, free=free, used=total - free, info=balance,)
+        return Balance(total=total, free=free, used=total - free, info=balance)
 
     def _deposits(self, limit: int = None) -> List[Deposit]:
         @paginated_limit("deposits", PER_PAGE)

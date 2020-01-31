@@ -153,13 +153,13 @@ def validate_name(name, bot_or_project):
     a_or_an = "an" if bot_or_project == "bot" else "a"
     if name is None:
         raise click.ClickException(
-            "you must provide {an} {bot} name".format(an=a_or_an, bot=bot_or_project,)
+            "you must provide {an} {bot} name".format(an=a_or_an, bot=bot_or_project)
         )
     # Check it's a valid directory name.
     if not name.isidentifier():
         raise click.ClickException(
             "'{name}' is not a valid {bot} name. Please make sure the "
-            "name is a valid identifier.".format(name=name, bot=bot_or_project,)
+            "name is a valid identifier.".format(name=name, bot=bot_or_project)
         )
     # Check it cannot be imported.
     try:
@@ -170,7 +170,7 @@ def validate_name(name, bot_or_project):
         raise click.ClickException(
             "'{name}' conflicts with the name of an existing Python "
             "module and cannot be used as {an} {bot} name. Please try "
-            "another name.".format(name=name, an=a_or_an, bot=bot_or_project,)
+            "another name.".format(name=name, an=a_or_an, bot=bot_or_project)
         )
 
 
