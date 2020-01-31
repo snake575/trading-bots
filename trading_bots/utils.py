@@ -19,8 +19,14 @@ DECIMALS = {
     # Crypto
     "BCH": 8,
     "BTC": 8,
+    "DAI": 4,
     "ETH": 8,
     "LTC": 8,
+    "UDC": 4,
+    "UST": 4,
+    "USDC": 4,
+    "USDT": 4,
+
 }
 
 
@@ -44,7 +50,7 @@ def truncate(value: Decimal, n_digits: int) -> Decimal:
 
 def truncate_to(value: Decimal, currency: str) -> Decimal:
     """Truncates a value to the number of decimals corresponding to the currency"""
-    decimal_places = DECIMALS.get(currency.upper(), 2)
+    decimal_places = DECIMALS.get(currency.upper(), 8)
     return truncate(value, decimal_places)
 
 

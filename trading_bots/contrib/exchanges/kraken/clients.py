@@ -225,10 +225,13 @@ class KrakenTrading(TradingClient, KrakenMarketBase, KrakenAuth):
     _wallet_cls = KrakenWallet
     has_batch_cancel = False
     min_order_amount_mapping = {
-        "BCH": Decimal("0.002"),
+        "BCH": Decimal("0.000002"),
         "BTC": Decimal("0.002"),
+        "DAI": Decimal("10.0"),
         "ETH": Decimal("0.02"),
-        "LTC": Decimal("0.002"),
+        "LTC": Decimal("0.1"),
+        "USDC": Decimal("5.0"),
+        "USDT": Decimal("5.0"),
     }
 
     def _order(self, order_id: str) -> Order:
