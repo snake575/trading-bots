@@ -21,8 +21,12 @@ __all__ = [
 
 class KrakenBase(BaseClient, ABC):
     name: str = "Kraken"
-    pairs_asset_map = {
-        "BTC": "XBT",
+
+    common_currencies = {
+        "XXBT": "BTC",
+        "XETH": "ETH",
+        "XXLM": "XLM",
+        "ZUSD": "USD",
     }
 
     def _markets(self) -> Set[Market]:
@@ -33,10 +37,6 @@ class KrakenBase(BaseClient, ABC):
             for key, pair in pairs.items():
                 base = pair["base"]
                 quote = pair["quote"]
-                if (base[0] == "X") or (base[0] == "Z"):
-                    base = base[1:]
-                if (quote[0] == "X") or (quote[0] == "Z"):
-                    quote = quote[1:]
                 base = self._parse_common_currency(base)
                 quote = self._parse_common_currency(quote)
                 dark_pool = ".d" in key
@@ -56,9 +56,9 @@ class KrakenBase(BaseClient, ABC):
 
     def _get_market_from_pair(self, pair):
         for market in self.markets:
-            m = market.code
-            for asset, other in self.pairs_asset_map.items():
-                m = m.replace(asset, other)
+            base = self._parse_common_currency(market.base, reverted=True)
+            quote = self._parse_common_currency(market.quote, reverted=True)
+            m = base + quote
             if m == pair:
                 return market
         raise KeyError
@@ -142,19 +142,13 @@ class KrakenWallet(WalletClient, KrakenAuth):
         "LTC": Fee(base=Money("0.01", "LTC")),
     }
 
-    asset_mapping = {
-        "BTC": "XXBT",
-        "ETH": "XETH",
-        "XLM": "XXLM",
-        "USD": "ZUSD",
-    }
 
     def _balance(self) -> Balance:
         self.log.warning(
             "Kraken only returns total balance, fetching open orders to calculate free balance"
         )
-        asset = self.asset_mapping.get(self.currency, self.currency)
         balance = self.client.balance()
+        asset = self._parse_common_currency(self.currency, reverted=True)
         if balance["result"].get(asset) is None:
             zero = Money(Decimal("0.0"), self.currency)
             return Balance(total=zero, free=zero, used=zero, info="balance not found")
@@ -167,10 +161,10 @@ class KrakenWallet(WalletClient, KrakenAuth):
             o_side = Side(order["descr"]["type"])
             o_amount = Decimal(order["vol"])
             o_price = Decimal(order["descr"]["price"])
-            if o_side == Side.SELL and asset == o_market.base:
+            if o_side == Side.SELL and self.currency == o_market.base:
                 free -= o_amount
                 used += o_amount
-            elif o_side == Side.BUY and asset == o_market.quote:
+            elif o_side == Side.BUY and self.currency == o_market.quote:
                 free -= o_amount * o_price
                 used += o_amount * o_price
         return Balance(
@@ -210,7 +204,7 @@ class KrakenWallet(WalletClient, KrakenAuth):
     def _withdraw(
         self, amount: Decimal, address: str, subtract_fee: bool = False, **params
     ) -> Withdrawal:
-        asset = self.currency.replace("BTC", "XBT").replace("ETH", "XETH")
+        asset = self._parse_common_currency(self.currency, reverted=True)
         withdraw = self.client.withdraw(asset, amount, address, **params)["result"]
         return self._parse_transaction(withdraw, TxType.WITHDRAWAL)
 
@@ -327,8 +321,7 @@ class KrakenTrading(TradingClient, KrakenMarketBase, KrakenAuth):
             order_type = OrderType(description[4])
         except ValueError:
             order_type = None
-        pair: str = description[2]
-        market = self._get_market_from_pair(pair)
+        market = self.market
         maya_dt = maya.MayaDT(maya.now().epoch)
         amount = Money(Decimal(description[1]), market.base)
         filled = None

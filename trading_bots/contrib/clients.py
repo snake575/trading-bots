@@ -61,13 +61,12 @@ class BaseClient(ClientWrapper, abc.ABC):
         self.log: Logger = logger or get_logger(__name__)
         self.store = store or get_store(self.log)
 
-    common_currencies = {
-        "XBT": "BTC",
-        "BCC": "BCH",
-        "DRK": "DASH",
-    }
+    common_currencies = dict()
 
-    def _parse_common_currency(self, currency: str) -> str:
+    def _parse_common_currency(self, currency: str, reverted: bool = False) -> str:
+        if reverted:
+            mapping = {v: k for k, v in self.common_currencies.items()}
+            return mapping.get(currency, currency)
         return self.common_currencies.get(currency, currency)
 
     @cached_property

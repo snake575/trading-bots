@@ -27,15 +27,36 @@ DEFAULT_WALLET_TYPE = "exchange"
 class BitfinexBase(BaseClient, ABC):
     name: str = "Bitfinex"
 
-    asset_mapping = {
-        "BCH": "BAB",
-        "USDC": "UDC",
-        "USDT": "UST",
+    common_currencies = {
+        "BAB": "BCH",
+        "UDC": "USDC",
+        "UST": "USDT",
     }
 
     def _markets(self) -> Set[Market]:
         symbols = self.client.symbols()
-        return {Market.from_code(symbol.upper()) for symbol in symbols}
+
+        def generate_markets():
+            for symbol in symbols:
+                symbol = symbol.upper()
+                if len(symbol) == 6:
+                    base, quote = symbol[:3], symbol[3:]
+                else:
+                    base, quote = symbol.split(':')
+                base = self._parse_common_currency(base)
+                quote = self._parse_common_currency(quote)
+                yield Market(base, quote)
+
+        return set(generate_markets())
+
+    def _get_market_from_pair(self, pair):
+        for market in self.markets:
+            base = self._parse_common_currency(market.base, reverted=True)
+            quote = self._parse_common_currency(market.quote, reverted=True)
+            m = base + quote
+            if m == pair:
+                return market
+        raise KeyError
 
 
 class BitfinexPublic(BitfinexBase):
@@ -60,8 +81,8 @@ class BitfinexAuth(BitfinexBase):
 
 class BitfinexMarketBase(MarketClient, ABC):
     def _market_id(self) -> str:
-        base = self.asset_mapping.get(self.market.base, self.market.base)
-        quote = self.asset_mapping.get(self.market.quote, self.market.quote)
+        base = self._parse_common_currency(self.market.base, reverted=True)
+        quote = self._parse_common_currency(self.market.quote, reverted=True)
         return base + quote
 
     @cached_property
@@ -192,7 +213,7 @@ class BitfinexWallet(WalletClient, BitfinexAuth):
             currency, client_params, dry_run, logger, store, name, **kwargs
         )
         self.wallet_type = wallet_type
-        self.asset = self.asset_mapping.get(self.currency, self.currency)
+        self.asset = self._parse_common_currency(self.currency, reverted=True)
 
     def _balance(self) -> Balance:
         balances = self.client.balances()
@@ -364,10 +385,11 @@ class BitfinexTrading(TradingClient, BitfinexMarketBase, BitfinexAuth):
         order = self.client.place_order(
             float(amount), float(price), side.value, order_type, self.market_id
         )
-        return self._parse_order(order)
+        return self._parse_order(order, self.market)
 
-    def _parse_order(self, order: Dict) -> Order:
-        market = Market.from_code(order["symbol"].upper())
+    def _parse_order(self, order: Dict, market: Market = None) -> Order:
+        if not market:
+            market = self._get_market_from_pair(order["symbol"].upper())
         order_type = order["type"]
         assert DEFAULT_WALLET_TYPE in order_type
         order_type = OrderType(order_type.split()[1])
