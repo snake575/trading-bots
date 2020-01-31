@@ -42,7 +42,7 @@ class BitfinexBase(BaseClient, ABC):
                 if len(symbol) == 6:
                     base, quote = symbol[:3], symbol[3:]
                 else:
-                    base, quote = symbol.split(':')
+                    base, quote = symbol.split(":")
                 base = self._parse_common_currency(base)
                 quote = self._parse_common_currency(quote)
                 yield Market(base, quote)

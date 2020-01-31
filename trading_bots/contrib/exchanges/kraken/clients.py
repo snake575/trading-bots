@@ -142,7 +142,6 @@ class KrakenWallet(WalletClient, KrakenAuth):
         "LTC": Fee(base=Money("0.01", "LTC")),
     }
 
-
     def _balance(self) -> Balance:
         self.log.warning(
             "Kraken only returns total balance, fetching open orders to calculate free balance"
