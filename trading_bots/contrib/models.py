@@ -266,7 +266,7 @@ class Order(Timestamped):
     cost: Optional[Money] = field(repr=False)
     filled: Optional[Money] = field(repr=False)
     fee: Optional[Money] = field(repr=False)
-    price: Optional[Money] = field(repr=False)
+    price: Optional[Money]
     info: Any = field(default=None, repr=False)
     timestamp: int = field(default=None, repr=False)
     datetime: dt = field(default=None, repr=False)
