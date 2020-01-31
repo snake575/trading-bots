@@ -23,15 +23,15 @@ __all__ = [
 
 DEFAULT_WALLET_TYPE = "exchange"
 
-ASSET_MAPPING = {
-    "BCH": "BAB",
-    "USDC": "UDC",
-    "USDT": "UST",
-}
-
 
 class BitfinexBase(BaseClient, ABC):
     name: str = "Bitfinex"
+
+    asset_mapping = {
+        "BCH": "BAB",
+        "USDC": "UDC",
+        "USDT": "UST",
+    }
 
     def _markets(self) -> Set[Market]:
         symbols = self.client.symbols()
@@ -59,10 +59,9 @@ class BitfinexAuth(BitfinexBase):
 
 
 class BitfinexMarketBase(MarketClient, ABC):
-
     def _market_id(self) -> str:
-        base = ASSET_MAPPING.get(self.market.base, self.market.base)
-        quote = ASSET_MAPPING.get(self.market.quote, self.market.quote)
+        base = self.asset_mapping.get(self.market.base, self.market.base)
+        quote = self.asset_mapping.get(self.market.quote, self.market.quote)
         return base + quote
 
     @cached_property
@@ -193,25 +192,28 @@ class BitfinexWallet(WalletClient, BitfinexAuth):
             currency, client_params, dry_run, logger, store, name, **kwargs
         )
         self.wallet_type = wallet_type
+        self.asset = self.asset_mapping.get(self.currency, self.currency)
 
     def _balance(self) -> Balance:
         balances = self.client.balances()
-        asset = ASSET_MAPPING.get(self.currency, self.currency)
-        balance = [b for b in balances if b["currency"] == asset.lower() and b["type"] == self.wallet_type]
-        if len(balance) == 0:
+        try:
+            balance = next(
+                b
+                for b in balances
+                if b["currency"] == self.asset.lower() and b["type"] == self.wallet_type
+            )
+        except StopIteration:
             zero = Money(Decimal("0.0"), self.currency)
-            return Balance(total=zero, free=zero, used=zero, info="balance not found")
-        balance = balance[0]
+            return Balance(total=zero, free=zero, used=zero)
         free = Money(balance["available"], self.currency)
         total = Money(balance["amount"], self.currency)
-        return Balance(total=total, free=free, used=total - free, info=balance,)
+        return Balance(total=total, free=free, used=total - free, info=balance)
 
     def __transactions(self, tx_type: TxType, limit: int = None) -> List[Deposit]:
         def get_transfers():
             data = {}
             timestamp = None
             max_limit = 999
-            asset = ASSET_MAPPING.get(self.currency, self.currency)
             if limit:
                 if limit > max_limit:
                     raise ValueError(f"Cant return more than {max_limit}")
@@ -219,7 +221,9 @@ class BitfinexWallet(WalletClient, BitfinexAuth):
                     f"Bitfinex last {limit} {tx_type.value} for the last {max_limit} transactions"
                 )
             while True:
-                entries = self.client.movements(asset, until=timestamp, limit=max_limit)
+                entries = self.client.movements(
+                    self.asset, until=timestamp, limit=max_limit
+                )
                 data.update(
                     {
                         entry["id"]: entry
@@ -239,9 +243,10 @@ class BitfinexWallet(WalletClient, BitfinexAuth):
             data = {}
             timestamp = since
             max_limit = 999
-            asset = ASSET_MAPPING.get(self.currency, self.currency)
             while True:
-                entries = self.client.movements(asset, since=timestamp, limit=max_limit)
+                entries = self.client.movements(
+                    self.asset, since=timestamp, limit=max_limit
+                )
                 data.update(
                     {
                         entry["id"]: entry
