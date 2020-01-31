@@ -153,9 +153,7 @@ class KrakenWallet(WalletClient, KrakenAuth):
         self.log.warning(
             "Kraken only returns total balance, fetching open orders to calculate free balance"
         )
-        asset = self.asset_mapping.get(self.currency)
-        if asset is None:
-            asset = self.currency
+        asset = self.asset_mapping.get(self.currency, self.currency)
         balance = self.client.balance()
         if balance["result"].get(asset) is None:
             zero = Money(Decimal("0.0"), self.currency)
