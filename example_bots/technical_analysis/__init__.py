@@ -1,1 +1,1 @@
-default_bot = 'example_bots.technical_analysis.bot.TechnicalAnalysis'
+default_bot = "example_bots.technical_analysis.bot.TechnicalAnalysis"

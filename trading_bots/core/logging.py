@@ -8,14 +8,14 @@ import pygogo
 logging.Formatter.converter = time.gmtime
 
 # Set default log format
-DEFAULT_CONSOLE_FORMAT = '%(asctime)s UTC | %(name)s | %(levelname)-8s | %(message)s'
+DEFAULT_CONSOLE_FORMAT = "%(asctime)s UTC | %(name)s | %(levelname)-8s | %(message)s"
 
 # Set formatter
 formatter = logging.Formatter(DEFAULT_CONSOLE_FORMAT)
 
 # Initialize pygogo logger
 going = pygogo.Gogo(
-    name='tradingbots',
+    name="tradingbots",
     low_formatter=formatter,
     high_formatter=formatter,
     verbose=True,
@@ -23,5 +23,5 @@ going = pygogo.Gogo(
 )
 
 
-def get_logger(name: str='base') -> Logger:
+def get_logger(name: str = "base") -> Logger:
     return going.get_logger(name)

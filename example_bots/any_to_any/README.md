@@ -1,6 +1,6 @@
 # Trading Bots - Any to Any example
 
-Example use case of Buda.com Bots framework for creating and running cryptocurrency trading bots.
+Example use case of Bots framework for creating and running cryptocurrency trading bots.
 
 ## Overview
 
@@ -13,19 +13,23 @@ This bot might be useful to vendors as they need the fiat money as soon as the c
 ## Installation
 
 Clone or download this repository to your working environment
+
 ```bash
-$ git clone https://github.com/budacom/buda-bots.git
+git clone https://github.com/snake575/trading-bots.git
 ```
 
-Install dependencies using pipenv (or pip, of course)
+Install dependencies using poetry (or pip, of course)
+
 ```bash
-$ pipenv install
+poetry install
 ```
 
 Then, activate the virtual enviroment:
+
 ```bash
-$ pipenv shell
+poetry shell
 ```
+
 We are ready!
 
 ## Authentication
@@ -39,16 +43,16 @@ Copy the file `secrets.yml.example` and rename it to `secrets.yml`. Then fill wi
 - This library will create live orders at Buda.com cryptocurrency exchange. Please review the code and check all the parameters of your strategy before entering your keys and running the bot.
 - This bot makes use of a storage file. Default storage saves data as JSON objects inside store.json file found at the root of this project. This file could contain data essential for the correct execution of this strategy.
 
-
 ## Usage
 
-For more references, go to the [official documentation](https://github.com/budacom/trading-bots/blob/master/README.md).
+For more references, go to the [official documentation](https://github.com/snake575/trading-bots/blob/master/README.md).
 
 ### Setup Config File
 
 Found at `example_bots/any_to_any/configs` folder. Its a yaml file that allows us to easily set parameters.
 
 **Example:**
+
 ```yml
 from:
   currency: 'BTC'    # 3 digits currency code
@@ -60,8 +64,6 @@ to:
 ```
 
 ## Bot Strategy
-
-
 
 ### Setup
 
@@ -108,7 +110,6 @@ def _algorithm(self):
     self.log.info('Processing pending withdrawals')
     self.process_withdrawals()
 ```
-
 
 **Update deposits**
 
@@ -224,36 +225,42 @@ As important as our strategy is providing abort instructions which is the piece 
 def _abort(self):
     pass
 ```
+
 - Nothing to rollback, just exit.
 
 ## Running bots
 
 Test by running the desired bot once from console:
+
 ```bash
-$ python bots.py run AnyToAny
+python bots.py run AnyToAny
 ```
 
 Flag `--config` can be specified to change the default config file:
+
 ```bash
-$ python bots.py run AnyToAny --config /path/to/any-to-any_other.yml
+python bots.py run AnyToAny --config /path/to/any-to-any_other.yml
 ```
 
 Now, we need this to run on a loop, we should use `loop` option indicating `--interval` as seconds:
+
 ```bash
-$ python bots.py loop AnyToAny --interval 300
+python bots.py loop AnyToAny --interval 300
 ```
 
 Running multiple bots for different markets is possible using multiple shells and config files:
 
 Shell 1:
+
 ```bash
-$ python bots.py loop AnyToAny --interval 300 --config any-to-any_btc_clp.yml
-```
-Shell 2:
-```bash
-$ python bots.py loop AnyToAny --interval 300 --config any-to-any__eth_btc.yml
+python bots.py loop AnyToAny --interval 300 --config any-to-any_btc_clp.yml
 ```
 
+Shell 2:
+
+```bash
+python bots.py loop AnyToAny --interval 300 --config any-to-any__eth_btc.yml
+```
 
 ## Contributing
 

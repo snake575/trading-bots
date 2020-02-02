@@ -4,7 +4,9 @@ from typing import Optional, Union
 from .money import Money
 
 
-def parse_money(value: Union[str, int, Decimal, Money], currency: str) -> Optional[Decimal]:
+def parse_money(
+    value: Union[str, int, Decimal, Money], currency: str
+) -> Optional[Decimal]:
     if value is None:
         return
     if isinstance(value, Money):

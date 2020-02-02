@@ -12,25 +12,26 @@ except ImportError:
     pass
 
 
-def get_store(logger: Logger=None) -> 'Store':
+def get_store(logger: Logger = None) -> "Store":
     """Get and configure the storage backend"""
     from trading_bots.conf import settings
+
     store_settings = settings.storage
-    store = store_settings.get('name', 'json')
-    if store == 'json':
-        store = 'trading_bots.core.storage.JSONStore'
-    elif store == 'redis':
-        store = 'trading_bots.core.storage.RedisStore'
+    store = store_settings.get("name", "json")
+    if store == "json":
+        store = "trading_bots.core.storage.JSONStore"
+    elif store == "redis":
+        store = "trading_bots.core.storage.RedisStore"
     store_cls = load_class_by_name(store)
     kwargs = store_cls.configure(store_settings)
     return store_cls(logger=logger, **kwargs)
 
 
 class BaseStore(abc.ABC):
-    name = ''
+    name = ""
 
-    def __init__(self, logger: Logger=None):
-        assert self.name, 'A name name must be defined!'
+    def __init__(self, logger: Logger = None):
+        assert self.name, "A name name must be defined!"
         self.log = logger or get_logger(__name__)
 
     @classmethod
@@ -41,14 +42,14 @@ class BaseStore(abc.ABC):
 
 class Store(BaseStore, abc.ABC):
     serializers = {
-        'json': j,
-        'pickle': p,
+        "json": j,
+        "pickle": p,
     }
 
     # GET --------------------------------------------------------------------
     def __get(self, method, *path, cast=None, serializer=None, **kwargs):
-        path_str = ' '.join(path)
-        self.log.debug(f'Get {path_str} from {self.name}')
+        path_str = " ".join(path)
+        self.log.debug(f"Get {path_str} from {self.name}")
         try:
             value = method(*path, **kwargs)
             if serializer:
@@ -59,10 +60,10 @@ class Store(BaseStore, abc.ABC):
                 return cast(value)
             return value
         except KeyError:
-            self.log.warning(f'{path_str} not found on {self.name}')
+            self.log.warning(f"{path_str} not found on {self.name}")
             return None
         except Exception:
-            self.log.exception(f'Failed to get {path_str} from {self.name}')
+            self.log.exception(f"Failed to get {path_str} from {self.name}")
             raise
 
     @abc.abstractmethod
@@ -77,12 +78,14 @@ class Store(BaseStore, abc.ABC):
         pass
 
     def hget(self, name: str, key: str, cast=None, serializer=None, **kwargs):
-        return self.__get(self._hget, name, key, cast=cast, serializer=serializer, **kwargs)
+        return self.__get(
+            self._hget, name, key, cast=cast, serializer=serializer, **kwargs
+        )
 
     # SET --------------------------------------------------------------------
     def __set(self, method, *path, value, serializer=None, **kwargs):
-        path_str = ' '.join(path)
-        self.log.debug(f'Set {path_str} on {self.name}')
+        path_str = " ".join(path)
+        self.log.debug(f"Set {path_str} on {self.name}")
         try:
             if serializer:
                 if isinstance(serializer, str):
@@ -90,7 +93,7 @@ class Store(BaseStore, abc.ABC):
                 value = serializer.dumps(value)
             method(*path, value=value, **kwargs)
         except Exception:
-            self.log.exception(f'Failed to set {path_str} on {self.name}')
+            self.log.exception(f"Failed to set {path_str} on {self.name}")
             raise
 
     @abc.abstractmethod
@@ -105,19 +108,21 @@ class Store(BaseStore, abc.ABC):
         pass
 
     def hset(self, name: str, key: str, value, serializer=None, **kwargs):
-        return self.__set(self._hset, name, key, value=value, serializer=serializer, **kwargs)
+        return self.__set(
+            self._hset, name, key, value=value, serializer=serializer, **kwargs
+        )
 
     # DELETE -----------------------------------------------------------------
     def __delete(self, method, *path, **kwargs):
-        path_str = ' '.join(path)
-        self.log.debug(f'Delete {path_str} from {self.name}')
+        path_str = " ".join(path)
+        self.log.debug(f"Delete {path_str} from {self.name}")
         try:
             method(*path, **kwargs)
         except KeyError:
-            self.log.warning(f'{path_str} not found on {self.name}')
+            self.log.warning(f"{path_str} not found on {self.name}")
             pass
         except Exception:
-            self.log.exception(f'Failed to delete {path_str} from {self.name}')
+            self.log.exception(f"Failed to delete {path_str} from {self.name}")
             raise
 
     @abc.abstractmethod
@@ -136,10 +141,10 @@ class Store(BaseStore, abc.ABC):
 
 
 class JSONStore(Store):
-    name = 'JSON File'
-    filename = 'store.json'
+    name = "JSON File"
+    filename = "store.json"
 
-    def __init__(self, filename: str=None, logger: Logger=None):
+    def __init__(self, filename: str = None, logger: Logger = None):
         super().__init__(logger)
         if filename is not None:
             self.filename = filename
@@ -147,7 +152,7 @@ class JSONStore(Store):
     @classmethod
     def configure(cls, settings):
         kwargs = super().configure(settings)
-        kwargs['filename'] = settings.get('filename')
+        kwargs["filename"] = settings.get("filename")
         return kwargs
 
     def _read(self):
@@ -155,15 +160,15 @@ class JSONStore(Store):
             with open(self.filename) as data_file:
                 return j.load(data_file)
         except FileNotFoundError:
-            self.log.warning(f'File not found! ({self.name})')
+            self.log.warning(f"File not found! ({self.name})")
             return {}
 
     def _write(self, value):
         try:
-            with open(self.filename, 'w') as outfile:
+            with open(self.filename, "w") as outfile:
                 j.dump(value, outfile)
         except Exception:
-            self.log.exception(f'Failed to write to {self.name}!')
+            self.log.exception(f"Failed to write to {self.name}!")
             raise
 
     def _get(self, name: str, **kwargs):
@@ -198,16 +203,16 @@ class JSONStore(Store):
 
 
 class RedisStore(Store):
-    name = 'Redis'
+    name = "Redis"
 
-    def __init__(self, url: str, logger: Logger=None):
+    def __init__(self, url: str, logger: Logger = None):
         super().__init__(logger)
         self.r = redis.StrictRedis.from_url(url)
 
     @classmethod
     def configure(cls, settings):
         kwargs = super().configure(settings)
-        kwargs['url'] = settings.get('url')
+        kwargs["url"] = settings.get("url")
         return kwargs
 
     def _get(self, name: str, **kwargs):

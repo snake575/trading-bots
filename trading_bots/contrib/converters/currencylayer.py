@@ -3,13 +3,11 @@ from cached_property import cached_property
 
 from .base import Converter
 
-__all__ = [
-    'CurrencyLayer'
-]
+__all__ = ["CurrencyLayer"]
 
 
 class CurrencyLayer(Converter):
-    name = 'Currencylayer'
+    name = "Currencylayer"
 
     @cached_property
     def client(self) -> api.CurrencyLayer:
@@ -17,6 +15,8 @@ class CurrencyLayer(Converter):
 
     def _get_rate(self, currency: str, to: str):
         market = (currency + to).upper()
-        response = self.client.live_rates(base=currency.lower(), currencies=[to.lower()])
-        rate = response['quotes'][market]
+        response = self.client.live_rates(
+            base=currency.lower(), currencies=[to.lower()]
+        )
+        rate = response["quotes"][market]
         return rate

@@ -1,0 +1,52 @@
+[tool.poetry]
+name = "trading_bots"
+version = "0.5.0"
+description = "A simple framework for bootstrapping your Crypto Trading Bots"
+authors = ["Sebastian Aranguiz <sarang575@gmail.com>"]
+license = "MIT"
+readme="README.md"
+repository="https://github.com/snake575/trading-bots"
+homepage="https://github.com/snake575/trading-bots"
+classifiers=[
+    # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy"
+]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+cached-property = "^1.5.1"
+click = "^7.0"
+jinja2 = "^2.11.0"
+maya = "^0.6.1"
+pygogo = "^0.12.0"
+pyyaml = "^5.3"
+requests = "^2.22.0"
+simple-settings = "^0.19.1"
+stringcase = "^1.2.0"
+trading-api-wrappers = "^0.16.10"
+
+[tool.poetry.dev-dependencies]
+black = {version = "^19.10b0", allow-prereleases = true}
+coverage = "^5.0.3"
+flake8 = "^3.7.9"
+flake8-bugbear = "^20.1.3"
+pytest = "^5.3.5"
+
+[tool.poetry.scripts]
+bots-admin = "trading_bots.core.management:cli"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

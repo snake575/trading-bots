@@ -18,39 +18,39 @@ FIAT_CONVERTERS = [
     converters.OpenExchangeRates(),
 ]
 
-Market = namedtuple('market', 'base quote id')
+Market = namedtuple("market", "base quote id")
 
 CRYPTO_MARKETS = [
-    Market('BTC', 'CLP', 'upper'),
-    Market('btc', 'CLP', 'lower_base'),
-    Market('BTC', 'clp', 'lower_quote'),
-    Market('BTC', 'BTC', 'same'),
+    Market("BTC", "CLP", "upper"),
+    Market("btc", "CLP", "lower_base"),
+    Market("BTC", "clp", "lower_quote"),
+    Market("BTC", "BTC", "same"),
 ]
 
 FIAT_MARKETS = [
-    Market('USD', 'CLP', 'upper'),
-    Market('usd', 'CLP', 'lower_base'),
-    Market('USD', 'clp', 'lower_quote'),
-    Market('USD', 'BTC', 'same'),
+    Market("USD", "CLP", "upper"),
+    Market("usd", "CLP", "lower_base"),
+    Market("USD", "clp", "lower_quote"),
+    Market("USD", "BTC", "same"),
 ]
 
 
-@pytest.fixture(params=CRYPTO_CONVERTERS, ids=attrgetter('name'))
+@pytest.fixture(params=CRYPTO_CONVERTERS, ids=attrgetter("name"))
 def crypto_converter(request):
     return request.param
 
 
-@pytest.fixture(params=FIAT_CONVERTERS, ids=attrgetter('name'))
+@pytest.fixture(params=FIAT_CONVERTERS, ids=attrgetter("name"))
 def fiat_converter(request):
     return request.param
 
 
-@pytest.fixture(params=CRYPTO_MARKETS, ids=attrgetter('id'))
+@pytest.fixture(params=CRYPTO_MARKETS, ids=attrgetter("id"))
 def crypto_market(request):
     return request.param
 
 
-@pytest.fixture(params=FIAT_MARKETS, ids=attrgetter('id'))
+@pytest.fixture(params=FIAT_MARKETS, ids=attrgetter("id"))
 def fiat_market(request):
     return request.param
 
@@ -76,12 +76,16 @@ def test_get_fiat_rate(fiat_converter, fiat_market):
 
 
 def test_convert_crypto(crypto_converter, crypto_market):
-    amount = crypto_converter.convert(0.5, currency=crypto_market.base, to=crypto_market.quote)
+    amount = crypto_converter.convert(
+        0.5, currency=crypto_market.base, to=crypto_market.quote
+    )
     assert isinstance(amount, float)
     assert amount > 0
 
 
 def test_convert_fiat(fiat_converter, fiat_market):
-    amount = fiat_converter.convert(0.5, currency=fiat_market.base, to=fiat_market.quote)
+    amount = fiat_converter.convert(
+        0.5, currency=fiat_market.base, to=fiat_market.quote
+    )
     assert isinstance(amount, float)
     assert amount > 0

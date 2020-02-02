@@ -1,6 +1,6 @@
 # Trading Bots - Relative Orders example
 
-Example use case of Buda.com Bots framework for creating and running cryptocurrency trading bots.
+Example use case of Bots framework for creating and running cryptocurrency trading bots.
 
 ## Overview
 
@@ -15,19 +15,19 @@ Currently this example allows only `Dynamic Center Price`, `Fixed Spread` and `F
 Clone or download this repository to your working environment
 
 ```bash
-git clone https://github.com/budacom/buda-bots.git
+git clone https://github.com/snake575/trading-bots.git
 ```
 
-Install dependencies using pipenv (or pip, of course)
+Install dependencies using poetry (or pip, of course)
 
 ```bash
-pipenv install
+poetry install
 ```
 
 Then, activate the virtual environment:
 
 ```bash
-pipenv shell
+poetry shell
 ```
 
 We are ready!
@@ -44,7 +44,7 @@ Copy the file `secrets.yml.example` and rename it to `secrets.yml`. Then fill wi
 
 ## Usage
 
-For more references, go to the [official documentation](https://github.com/budacom/trading-bots/blob/master/README.md).
+For more references, go to the [official documentation](https://github.com/snake575/trading-bots/blob/master/README.md).
 
 ### Setup Config File
 
@@ -123,16 +123,19 @@ def _algorithm(self):
 ```
 
 **Prepare order prices:**
+
 - First, we get the `market ticker` from Buda.com's API.
 - We offset our `mid price` using our `multipliers` from configs and save them as `price_buy` and `price_sell`.
 
 **Prepare order amounts:**
+
 - Cancel all pending orders at the selected market on Buda.com. This frees balance to use on our orders.
 - Get available balance amounts from Buda.com's API.
 - Validates against max allowed amount from our configs `max_base` and `max_quote`.
 - Sets the amounts to be used on orders as `amount_buy` and `amount_sell`.
 
 **Place orders:**
+
 - Checks order amounts against minimum allowed by Buda.com.
 - Places our orders at the exchange (You can test with `dry_run: True` flag on global settings to be safe).
 

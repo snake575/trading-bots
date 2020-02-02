@@ -5,15 +5,13 @@ from collections import Counter, OrderedDict, defaultdict
 from importlib import import_module
 from os import path
 
-from .base import Bot
 from ..conf import defaults
-from ..core.exceptions import AppRegistryNotReady
-from ..core.exceptions import ImproperlyConfigured
-from ..core.utils import load_class_by_name
-from ..core.utils import load_yaml_file
+from ..core.exceptions import AppRegistryNotReady, ImproperlyConfigured
+from ..core.utils import load_class_by_name, load_yaml_file
+from .base import Bot
 
 # The file extension(s) to import as configs
-config_extensions = ('py', 'yml')
+config_extensions = ("py", "yml")
 
 
 class BotRegistry:
@@ -36,7 +34,7 @@ class BotRegistry:
 
         # Last component of the Python path to the bot class e.g. 'Bot'.
         # This value must be unique across a project.
-        self.label = label or bot_name.rpartition('.')[-1]
+        self.label = label or bot_name.rpartition(".")[-1]
 
         # Filesystem path to the bot directory e.g.
         # '/path/to/trading_bots/bots'.
@@ -52,16 +50,16 @@ class BotRegistry:
         self.configs = OrderedDict()
 
     def __repr__(self):
-        return '<%s: %s>' % (self.__class__.__name__, self.label)
+        return "<%s: %s>" % (self.__class__.__name__, self.label)
 
     @staticmethod
     def _path_from_module(module):
         """Attempt to determine bot's filesystem path from its module."""
         # Convert paths to list because Python's _NamespacePath doesn't support
         # indexing.
-        paths = list(getattr(module, '__path__', []))
+        paths = list(getattr(module, "__path__", []))
         if len(paths) != 1:
-            filename = getattr(module, '__file__', None)
+            filename = getattr(module, "__file__", None)
             if filename is not None:
                 paths = [os.path.dirname(filename)]
             else:
@@ -72,12 +70,14 @@ class BotRegistry:
             raise ImproperlyConfigured(
                 "The bot module %r has multiple filesystem locations (%r); "
                 "you must configure this bot with an AppConfig subclass "
-                "with a 'path' class attribute." % (module, paths))
+                "with a 'path' class attribute." % (module, paths)
+            )
         elif not paths:
             raise ImproperlyConfigured(
                 "The bot module %r has no filesystem location, "
                 "you must configure this bot with an AppConfig subclass "
-                "with a 'path' class attribute." % (module,))
+                "with a 'path' class attribute." % (module,)
+            )
         return paths[0]
 
     @classmethod
@@ -97,7 +97,7 @@ class BotRegistry:
             # bot class fails too, we'll trigger the ImportError again.
             module = None
 
-            mod_path, _, cls_name = entry.rpartition('.')
+            mod_path, _, cls_name = entry.rpartition(".")
 
             # Raise the original exception when entry cannot be a path to an
             # bot config class.
@@ -110,9 +110,9 @@ class BotRegistry:
                 entry = module.default_bot
             except AttributeError:
                 # Otherwise, it simply uses the default bot registry class.
-                return cls(f'{entry}.Bot', module)
+                return cls(f"{entry}.Bot", module)
             else:
-                mod_path, _, cls_name = entry.rpartition('.')
+                mod_path, _, cls_name = entry.rpartition(".")
 
         # If we're reaching this point, we must attempt to load the bot
         # class located at <mod_path>.<cls_name>
@@ -129,8 +129,7 @@ class BotRegistry:
         # Check for obvious errors. (This check prevents duck typing, but
         # it could be removed if it became a problem in practice.)
         if not issubclass(bot_cls, Bot):
-            raise ImproperlyConfigured(
-                "'%s' isn't a subclass of Bot." % entry)
+            raise ImproperlyConfigured("'%s' isn't a subclass of Bot." % entry)
 
         # Entry is a path to an bot config class.
         return cls(entry, mod, bot_cls.label)
@@ -157,7 +156,7 @@ class BotRegistry:
 
     def import_configs(self):
         self.configs_path = os.path.join(self.path, defaults.CONFIGS_DIR_NAME)
-        for root, dirs, files in os.walk(self.configs_path):
+        for root, _dirs, files in os.walk(self.configs_path):
             for filename in files:
                 file_path = path.join(root, filename)
                 if file_path.endswith(config_extensions):
@@ -176,7 +175,7 @@ class Bots:
         # installed_bots is set to None when creating the master registry
         # because it cannot be populated at that point. Other registries must
         # provide a list of installed bots and are populated immediately.
-        if installed_bots is None and hasattr(sys.modules[__name__], 'bots'):
+        if installed_bots is None and hasattr(sys.modules[__name__], "bots"):
             raise RuntimeError("You must supply an installed_bots argument.")
 
         # Mapping of bot labels => config names => config files.
@@ -223,25 +222,23 @@ class Bots:
             for entry in installed_bots or {}:
                 if isinstance(entry, Bot):
                     cls = entry
-                    entry = '.'.join([cls.__module__, cls.__name__])
+                    entry = ".".join([cls.__module__, cls.__name__])
                 bot_reg = BotRegistry.create(entry)
                 if bot_reg.label in self.bots:
                     raise ImproperlyConfigured(
-                        "Bot labels aren't unique, "
-                        "duplicates: %s" % bot_reg.label)
+                        "Bot labels aren't unique, " "duplicates: %s" % bot_reg.label
+                    )
 
                 self.bots[bot_reg.label] = bot_reg
                 bot_reg.bots = self
 
             # Check for duplicate bot names.
-            counts = Counter(
-                bot_reg.name for bot_reg in self.bots.values())
-            duplicates = [
-                name for name, count in counts.most_common() if count > 1]
+            counts = Counter(bot_reg.name for bot_reg in self.bots.values())
+            duplicates = [name for name, count in counts.most_common() if count > 1]
             if duplicates:
                 raise ImproperlyConfigured(
-                    "Bot names aren't unique, "
-                    "duplicates: %s" % ", ".join(duplicates))
+                    "Bot names aren't unique, " "duplicates: %s" % ", ".join(duplicates)
+                )
 
             self.bots_ready = True
 

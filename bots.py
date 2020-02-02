@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 import os
 
+if __name__ == "__main__":
 
-if __name__ == '__main__':
-
-    os.environ.setdefault('SETTINGS', 'settings.yml,secrets.yml')
+    os.environ.setdefault("SETTINGS", "settings.yml,secrets.yml")
 
     try:
         from trading_bots.core.management import cli

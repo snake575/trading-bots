@@ -3,14 +3,15 @@ import time
 from logging import Logger
 
 import trading_bots
-from .registry import bots
+
 from ..conf import settings
+from .registry import bots
 
 
 class BotTask:
     """Class representing a Bot Task."""
 
-    def __init__(self, bot_label: str, config_name: str, logger: Logger=None):
+    def __init__(self, bot_label: str, config_name: str, logger: Logger = None):
         settings.configure()
         trading_bots.setup()
         self.config_name = config_name
