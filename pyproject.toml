@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "trading_bots"
-version = "0.4.2"
+version = "0.5.0"
 description = "A simple framework for bootstrapping your Crypto Trading Bots"
 authors = ["Sebastian Aranguiz <sarang575@gmail.com>"]
 license = "MIT"
