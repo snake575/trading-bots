@@ -1,6 +1,7 @@
 import abc
 from decimal import Decimal
 from typing import Dict, Union
+from logging import Logger
 
 from trading_bots.core.logging import get_logger
 
@@ -9,7 +10,6 @@ from ..money import Money
 
 __all__ = ["ConverterRateError", "ConverterValidationError", "Converter"]
 
-logger = get_logger(__name__)
 Number = Union[float, Decimal]
 
 
@@ -25,10 +25,11 @@ class ConverterValidationError(Exception):
 
 class Converter(ClientWrapper, abc.ABC):
     def __init__(
-        self, return_decimal: bool = False, client_params: Dict = None, name: str = None
+        self, return_decimal: bool = False, client_params: Dict = None, name: str = None, logger: Logger = None
     ):
         super().__init__(client_params, name)
         self.return_decimal = return_decimal
+        self.log = logger or get_logger(__name__)
 
     def _format_number(self, value: (str, Number)) -> Number:
         if self.return_decimal:
