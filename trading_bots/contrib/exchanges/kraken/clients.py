@@ -256,8 +256,10 @@ class KrakenTrading(TradingClient, KrakenMarketBase, KrakenAuth):
     def _place_order(
         self, side: Side, order_type: OrderType, amount: Decimal, price: Decimal = None
     ) -> Order:
+        amount = float(amount)
+        price = float(price) if price else None
         order = self.client.add_order(
-            self.market_id, side.value, order_type.value, float(amount), float(price)
+            self.market_id, side.value, order_type.value, amount, price
         )
         return self._parse_placed_order(order)
 
