@@ -7,6 +7,7 @@ from os import path
 import click
 import stringcase
 from jinja2 import Template
+from importlib.metadata import version
 
 import trading_bots
 from trading_bots.conf import defaults, settings
@@ -69,7 +70,7 @@ def handle_template(bot_or_project, name, target=None, **options):
         pascal_case_name: pascal_case_value,
         snake_case_name: snake_case_value,
         "settings_files": defaults.SETTINGS,
-        "version": trading_bots.__version__.__version__,
+        "version": version("trading_bots"),
     }
 
     # Setup a stub settings environment for template rendering
