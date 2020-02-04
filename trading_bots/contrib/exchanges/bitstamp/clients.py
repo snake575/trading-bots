@@ -290,8 +290,9 @@ class BitstampTrading(TradingClient, BitstampMarketBase, BitstampAuth):
             },
         }
         place_order = methods[o_type][side]
-        amount = truncate(amount, 8)
-        args = (float(amount), float(price)) if o_type == OrderType.LIMIT else (amount,)
+        amount = float(truncate(amount, 8))
+        price = float(price) if price else None
+        args = (amount, price) if o_type == OrderType.LIMIT else (amount,)
         order = place_order(self.market_id, *args)
         return self._parse_order(order, o_type)
 

@@ -1,6 +1,3 @@
-from . import __version__
-
-
 def setup():
     """
     Configure the settings (this happens as a side effect of accessing the

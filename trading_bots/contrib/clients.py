@@ -1,6 +1,7 @@
 import abc
 from decimal import Decimal
 from functools import wraps
+from importlib.metadata import version
 from logging import Logger
 from operator import attrgetter
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, Union
@@ -9,7 +10,6 @@ import maya
 from cached_property import cached_property
 from requests_toolbelt import user_agent
 
-from trading_bots.__version__ import __version__
 from trading_bots.conf import settings
 from trading_bots.core.logging import get_logger
 from trading_bots.core.storage import Store, get_store
@@ -27,7 +27,7 @@ __all__ = [
     "TradingClient",
 ]
 
-USER_AGENT = user_agent("trading-bots", __version__)
+USER_AGENT = user_agent("trading-bots", version("trading_bots"))
 
 
 class ClientWrapper(abc.ABC):

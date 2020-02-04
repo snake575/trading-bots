@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "trading_bots"
-version = "0.5.1"
+version = "0.5.2"
 description = "A simple framework for bootstrapping your Crypto Trading Bots"
 authors = ["Sebastian Aranguiz <sarang575@gmail.com>"]
 license = "MIT"
@@ -28,7 +28,7 @@ classifiers=[
 python = "^3.6"
 cached-property = "^1.5.1"
 click = "^7.0"
-jinja2 = "^2.11.0"
+jinja2 = "^2.11.1"
 maya = "^0.6.1"
 pygogo = "^0.12.0"
 pyyaml = "^5.3"
@@ -41,7 +41,7 @@ trading-api-wrappers = "^0.16.10"
 black = {version = "^19.10b0", allow-prereleases = true}
 coverage = "^5.0.3"
 flake8 = "^3.7.9"
-flake8-bugbear = "^20.1.3"
+flake8-bugbear = "^20.1.4"
 pytest = "^5.3.5"
 
 [tool.poetry.scripts]
