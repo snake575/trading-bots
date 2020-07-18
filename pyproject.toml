@@ -28,6 +28,7 @@ classifiers=[
 python = "^3.6"
 cached-property = "^1.5.1"
 click = "^7.0"
+importlib_metadata = {version = "^1.7.0", python = "<3.8"}
 jinja2 = "^2.11.1"
 maya = "^0.6.1"
 pygogo = "^0.12.0"
