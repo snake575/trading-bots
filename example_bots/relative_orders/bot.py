@@ -65,7 +65,7 @@ class RelativeOrders(Bot):
         try:
             self.buda.cancel_all_orders()
         except Exception:
-            self.log.critical(f"Failed!, some orders might not be cancelled")
+            self.log.critical("Failed!, some orders might not be cancelled")
             raise
         else:
-            self.log.info(f"All open orders were cancelled")
+            self.log.info("All open orders were cancelled")

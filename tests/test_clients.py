@@ -263,7 +263,7 @@ class TestTradingClient:
             pytest.skip(f"Not enough orders (required={limit})")
         test_order = orders[0]
         if not test_order.id:
-            pytest.skip(f"Test order has no ID")
+            pytest.skip("Test order has no ID")
         order = trading_client.fetch_order(test_order.id)
         assert isinstance(order, Order)
         assert order == test_order

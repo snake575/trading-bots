@@ -50,7 +50,7 @@ def print_banner():
 
 
 def print_options(bot, config, settings):
-    click.echo(f"Global settings")
+    click.echo("Global settings")
     click.echo(f"- Settings files: {os.environ.get('SETTINGS', settings)}")
     click.echo()
     click.echo(f"Bot: {bot}")

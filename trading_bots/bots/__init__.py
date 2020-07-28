@@ -3,7 +3,7 @@ from .registry import bots
 from .tasks import BotTask
 
 __all__ = [
-    'Bot',
-    'bots',
-    'BotTask',
+    "Bot",
+    "bots",
+    "BotTask",
 ]
