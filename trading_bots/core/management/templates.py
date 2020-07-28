@@ -7,10 +7,16 @@ from os import path
 import click
 import stringcase
 from jinja2 import Template
-from importlib.metadata import version
 
 import trading_bots
 from trading_bots.conf import defaults, settings
+
+import sys
+if sys.version_info[0] == 3 and sys.version_info[1] >= 8:
+    from importlib.metadata import version
+else:
+    from importlib_metadata import version
+
 
 # Rewrite the following suffixes when determining the target filename.
 rewrite_template_suffixes = (
