@@ -27,23 +27,23 @@ classifiers=[
 [tool.poetry.dependencies]
 python = "^3.6"
 cached-property = "^1.5.1"
-click = "^7.0"
+click = "^7.1.2"
 importlib_metadata = {version = "^1.7.0", python = "<3.8"}
-jinja2 = "^2.11.1"
+jinja2 = "^2.11.2"
 maya = "^0.6.1"
 pygogo = "^0.12.0"
-pyyaml = "^5.3"
-requests = "^2.22.0"
+pyyaml = "^5.3.1"
+requests = "^2.24.0"
 simple-settings = "^0.19.1"
 stringcase = "^1.2.0"
 trading-api-wrappers = "^0.16.10"
 
 [tool.poetry.dev-dependencies]
 black = {version = "^19.10b0", allow-prereleases = true}
-coverage = "^5.0.3"
-flake8 = "^3.7.9"
+coverage = "^5.2.1"
+flake8 = "^3.8.3"
 flake8-bugbear = "^20.1.4"
-pytest = "^5.3.5"
+pytest = "^5.4.3"
 
 [tool.poetry.scripts]
 bots-admin = "trading_bots.core.management:cli"
