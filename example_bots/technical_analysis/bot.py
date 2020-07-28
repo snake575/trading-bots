@@ -65,10 +65,10 @@ class TechnicalAnalysis(Bot):
         # Check if our position is open or closed
         if self.position["status"] == "closed":
             # Try conditions to open position
-            self.log.info(f"Position is closed, checking to open")
+            self.log.info("Position is closed, checking to open")
             if df.close[-1] < df.bb_lower[-1] and df.rsi[-1] < self.rsi_oversold:
                 # Last price is lower than the lower BBand and RSI is oversold, BUY!
-                self.log.info(f"Market oversold! BUY!")
+                self.log.info("Market oversold! BUY!")
                 amount = self.get_amount(Side.BUY)
                 if amount >= self.buda.min_order_amount:
                     tx = self.buda.place_market_order(Side.BUY, amount)
@@ -79,11 +79,11 @@ class TechnicalAnalysis(Bot):
                     }
                 else:
                     self.log.warning(
-                        f"Available amount is lower than minimum order amount"
+                        "Available amount is lower than minimum order amount"
                     )
             elif df.close[-1] > df.bb_upper[-1] and df.rsi[-1] > self.rsi_overbought:
                 # Last price is higher than the upper BBand and RSI is overbought, SELL!
-                self.log.info(f"Market overbought! SELL!")
+                self.log.info("Market overbought! SELL!")
                 amount = self.get_amount(Side.SELL)
                 if amount >= self.buda.min_order_amount:
                     tx = self.buda.place_market_order(Side.SELL, amount)
@@ -94,15 +94,15 @@ class TechnicalAnalysis(Bot):
                     }
                 else:
                     self.log.warning(
-                        f"Available amount is lower than minimum order amount"
+                        "Available amount is lower than minimum order amount"
                     )
             else:
-                self.log.info(f"Market conditions unmet to open position")
+                self.log.info("Market conditions unmet to open position")
         else:
-            self.log.info(f"Position is open, checking to close")
+            self.log.info("Position is open, checking to close")
             if self.position["side"] == Side.BUY.value and df.rsi[-1] >= 30:
                 # RSI is back to normal, close Buy position
-                self.log.info(f"Market is back to normal, closing position")
+                self.log.info("Market is back to normal, closing position")
                 amount = Money.loads(self.position["amount"])
                 if amount >= self.buda.min_order_amount:
                     tx = self.buda.place_market_order(Side.SELL, amount)
@@ -113,11 +113,11 @@ class TechnicalAnalysis(Bot):
                         self.position["amount"] = remaining
                 else:
                     self.log.warning(
-                        f"Available amount is lower than minimum order amount"
+                        "Available amount is lower than minimum order amount"
                     )
             elif self.position["side"] == Side.SELL.value and df.rsi[-1] <= 70:
                 # RSI is back to normal, close Sell position
-                self.log.info(f"Market is back to normal, closing position")
+                self.log.info("Market is back to normal, closing position")
                 amount = Money.loads(self.position["amount"])
                 if amount >= self.buda.min_order_amount:
                     tx = self.buda.place_market_order(Side.BUY, amount)
@@ -128,10 +128,10 @@ class TechnicalAnalysis(Bot):
                         self.position["amount"] = repr(remaining)
                 else:
                     self.log.warning(
-                        f"Available amount is lower than minimum order amount"
+                        "Available amount is lower than minimum order amount"
                     )
             else:
-                self.log.info(f"Market conditions unmet to close position")
+                self.log.info("Market conditions unmet to close position")
         self.store.set("position", self.position)
 
     def _abort(self):
@@ -153,7 +153,7 @@ class TechnicalAnalysis(Bot):
 
     def get_trades(self, from_timestamp: float):
         # Getting previous trades from store
-        self.log.debug(f"Fetching trades since %s", get_iso_time_str(from_timestamp))
+        self.log.debug("Fetching trades since %s", get_iso_time_str(from_timestamp))
         prev_trades = self._get_previous_trades() or []
         # Check trades to establish timestamp
         if prev_trades:
@@ -165,7 +165,7 @@ class TechnicalAnalysis(Bot):
                 get_iso_time_str(last_trade),
             )
             # Check first_trade < last_trade on file
-            assert first_trade < last_trade, f"File's first_trade > last_trade!)"
+            assert first_trade < last_trade, "File's first_trade > last_trade!)"
             # Use file's last trade timestamp whenever possible
             if first_trade < from_timestamp < last_trade:
                 query_timestamp = last_trade
@@ -173,7 +173,7 @@ class TechnicalAnalysis(Bot):
                 query_timestamp = from_timestamp
                 prev_trades = []
         else:
-            self.log.info(f"No trades in store!")
+            self.log.info("No trades in store!")
             query_timestamp = from_timestamp
         # Add a null entry with n_days_timestamp (entries are bases on trades IDs)
         trades = [

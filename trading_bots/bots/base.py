@@ -61,12 +61,12 @@ class Bot(abc.ABC):
             self._algorithm()
 
         except Exception:
-            self.log.exception(f"Bot entered an invalid state!")
+            self.log.exception("Bot entered an invalid state!")
             self._abort()
             raise
 
         except KeyboardInterrupt:
-            self.log.warning(f"Bot execution cancelled!")
+            self.log.warning("Bot execution cancelled!")
             self._abort()
             raise
 

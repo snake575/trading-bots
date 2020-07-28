@@ -181,5 +181,5 @@ class AnyToAny(Bot):
         elif from_currency in quotes and to_currency in bases:
             market = Market(to_currency, from_currency)
         else:
-            raise NotImplementedError(f"No compatible market found!")
+            raise NotImplementedError("No compatible market found!")
         return market

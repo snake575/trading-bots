@@ -59,7 +59,7 @@ class SimpleLimit(Bot):
         self.log.info("Closing open orders")
         self.buda.cancel_all_orders()
         # Get available balances
-        self.log.info(f"Preparing amounts")
+        self.log.info("Preparing amounts")
         # Fetch available balances
         available_base = self.buda.wallets.base.fetch_balance().free
         available_quote = self.buda.wallets.quote.fetch_balance().free
@@ -90,10 +90,10 @@ class SimpleLimit(Bot):
         try:
             self.buda.cancel_all_orders()
         except Exception:
-            self.log.critical(f"Failed!, some orders might not be cancelled")
+            self.log.critical("Failed!, some orders might not be cancelled")
             raise
         else:
-            self.log.info(f"All open orders were cancelled")
+            self.log.info("All open orders were cancelled")
 
     def _get_reference_prices(self):
         ticker = self.reference.fetch_ticker()

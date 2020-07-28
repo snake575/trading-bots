@@ -383,7 +383,9 @@ class BitfinexTrading(TradingClient, BitfinexMarketBase, BitfinexAuth):
     ) -> Order:
         order_type = self.order_type_mapping[o_type]
         amount = float(amount)
-        price = float(price) if price else 1.0  # Must be positive. Use random number for market orders.
+        price = (
+            float(price) if price else 1.0
+        )  # Must be positive. Use random number for market orders.
         order = self.client.place_order(
             amount, price, side.value, order_type, self.market_id
         )

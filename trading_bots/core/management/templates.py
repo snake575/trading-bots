@@ -1,6 +1,7 @@
 import os
 import shutil
 import stat
+import sys
 from importlib import import_module
 from os import path
 
@@ -11,7 +12,6 @@ from jinja2 import Template
 import trading_bots
 from trading_bots.conf import defaults, settings
 
-import sys
 if sys.version_info[0] == 3 and sys.version_info[1] >= 8:
     from importlib.metadata import version
 else:

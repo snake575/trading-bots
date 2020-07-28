@@ -26,7 +26,6 @@ DECIMALS = {
     "UST": 4,
     "USDC": 4,
     "USDT": 4,
-
 }
 
 
