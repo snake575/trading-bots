@@ -1,7 +1,6 @@
 import abc
 from decimal import Decimal
 from functools import wraps
-from importlib.metadata import version
 from logging import Logger
 from operator import attrgetter
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, Union
@@ -9,6 +8,12 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, Union
 import maya
 from cached_property import cached_property
 from requests_toolbelt import user_agent
+
+import sys
+if sys.version_info[0] == 3 and sys.version_info[1] >= 8:
+    from importlib.metadata import version
+else:
+    from importlib_metadata import version
 
 from trading_bots.conf import settings
 from trading_bots.core.logging import get_logger
